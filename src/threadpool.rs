@@ -24,16 +24,16 @@ impl ThreadPoolMaster {
 
     pub fn start_tpool(self) -> JoinHandle<()> {
         thread::spawn(move || loop {
-            if let Some(data) = TPOOL_QUEUE.pop() {
-                // println!("Received in tpool {data:?}");
+            if let Some(work) = TPOOL_QUEUE.pop() {
+                // println!("Received in tpool {work:?}");
 
                 // Run in threadpool
                 self.pool.execute(move || {
-                    match data.work_type {
+                    match work.work_type {
                         // Work on map for token wise
-                        WorkType::TokenWise(_) => work_on_map(data),
+                        WorkType::TokenWise(_) => work_on_map(work),
                         // Work on queue for other types
-                        _ => work_on_queue(data),
+                        _ => work_on_queue(work),
                     }
                 });
             }
@@ -44,12 +44,13 @@ impl ThreadPoolMaster {
 pub fn work_on_map(data: Work) {
     let value = TOKEN_WISE_MAP.get(&data.work_type.get_id()).unwrap();
 
-    // unsafe {println!("Data received in work_on_map: {:?}", *value.load(Ordering::SeqCst));}
-
     let value = value.swap(ptr::null_mut(), Ordering::SeqCst);
-
-    // Unsafe because wee need to deref value
     unsafe {
+        // Creating box from raw ptr is unsafe, because it could be null
+        // however, we only ensure that this value is not null
+        let value = Box::from_raw(value);
+
+        // Call associated function
         (data.processing_fn)(*value);
     }
 }
@@ -60,6 +61,7 @@ pub fn work_on_queue(data: Work) {
 
     while let Some(packet) = work_queue.pop() {
         // println!("Data received in work_on_queue: {:?}", packet);
+
         (data.processing_fn)(packet);
 
         if !work_queue.is_empty() {

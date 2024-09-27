@@ -1,12 +1,15 @@
 use std::{
-    ptr,
+    ptr::drop_in_place,
     sync::atomic::{AtomicPtr, Ordering},
     thread::{self, JoinHandle},
 };
 
 use crate::{
     global::{INPUT_QUEUE, TOKEN_WISE_MAP, TPOOL_QUEUE, WORK_LOCKS, WORK_QUEUES},
-    types::{packet::Packet, work::{Work, WorkType}},
+    types::{
+        packet::Packet,
+        work::{Work, WorkType},
+    },
 };
 
 pub struct Distributor {}
@@ -17,18 +20,16 @@ impl Distributor {
     }
 
     pub fn start_distributor(self) -> JoinHandle<()> {
-        thread::spawn(move || {
-            loop {
-                if let Some(packet) = INPUT_QUEUE.pop() {
-                    // println!("Received in ditributor: {:?}", data);
+        thread::spawn(move || loop {
+            if let Some(packet) = INPUT_QUEUE.pop() {
+                // println!("Received in ditributor: {:?}", packet);
 
-                    let work = packet.create_work();
+                let work = packet.create_work();
 
-                    if let WorkType::TokenWise(_) = work.work_type {
-                        Distributor::distribute_to_map(packet, work);
-                    } else {
-                        Distributor::distribute_to_queue(packet, work);
-                    }
+                if let WorkType::TokenWise(_) = work.work_type {
+                    Distributor::distribute_to_map(packet, work);
+                } else {
+                    Distributor::distribute_to_queue(packet, work);
                 }
             }
         })
@@ -50,21 +51,33 @@ impl Distributor {
     }
 
     pub fn distribute_to_map(packet: Packet, work: Work) {
-        let mut boxed = packet;
+        let boxed = Box::new(packet);
 
-        let old_packet = TOKEN_WISE_MAP.get(&work.work_type.get_id());
+        let atomic_ptr = TOKEN_WISE_MAP.get(&work.work_type.get_id());
 
-        if let Some(data) = old_packet {
-            if data.swap(&mut boxed, Ordering::SeqCst) == ptr::null_mut() {
+        if let Some(atomic_ptr) = atomic_ptr {
+            // If value exists
+            // retreive old packet by swaping with new value
+            let old_packet = atomic_ptr.swap(Box::into_raw(boxed), Ordering::SeqCst);
+
+            // If old packet ptr was set to null
+            // create new work
+            if old_packet.is_null() {
                 TPOOL_QUEUE.push(work);
+            } else {
+                // If old packet was not null
+                // means it is still allocated in heap
+                // manually create box from it and drop
+                unsafe {
+                    drop_in_place(old_packet);
+                }
             }
         } else {
-            let atomic_ptr = AtomicPtr::new(&mut boxed);
+            let atomic_ptr = AtomicPtr::new(Box::into_raw(boxed));
 
             TOKEN_WISE_MAP.insert(work.work_type.get_id(), atomic_ptr);
 
             TPOOL_QUEUE.push(work);
         }
     }
-
 }

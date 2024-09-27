@@ -26,6 +26,7 @@ impl Packet {
     }
 
     pub fn identify_work_type(&self) -> WorkType {
-        todo!()
+        WorkType::TokenWise(2)
+        // todo!()
     }
 }

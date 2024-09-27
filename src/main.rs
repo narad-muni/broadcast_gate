@@ -18,7 +18,6 @@ mod utils;
 mod workers;
 
 fn main() {
-    dotenvy::dotenv().unwrap();
     settings::init();
     TOKEN_WISE_MAP.init();
 
@@ -26,7 +25,7 @@ fn main() {
     let tpool_master = ThreadPoolMaster::new(settings::get().thread_count);
     let output = Output::new();
 
-    let input_thread = thread::spawn(move || UdpInput::new().read());
+    let input_thread = thread::spawn(|| UdpInput::new().read());
     let distributor_thread = distributor.start_distributor();
     let tpool_master_thread = tpool_master.start_tpool();
     let output_thread = output.write();

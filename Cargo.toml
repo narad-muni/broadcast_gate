@@ -6,7 +6,6 @@ edition = "2021"
 [dependencies]
 bitflags = "2.6.0"
 crossbeam = "0.8.4"
-dotenvy = "0.15.7"
 lazy_static = "1.5.0"
 rdkafka = "0.36.2"
 seq-macro = "0.3.5"

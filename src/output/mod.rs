@@ -35,6 +35,9 @@ impl Output {
 
             loop {
                 if let Some(packet) = OUTPUT_QUEUE.pop() {
+                    if packet.0[0] == 1 {
+                        break;
+                    }
                     if settings.output_targets.contains(OutputTargets::UDP) {
                         udp.write(packet);
                     }

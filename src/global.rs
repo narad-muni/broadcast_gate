@@ -21,13 +21,13 @@ macro_rules! create_array {
 }
 
 // No of work types
-const TYPE_COUNT: usize = 4;
+const TYPE_COUNT: usize = 258;
 
 pub static INPUT_QUEUE: SegQueue<Packet> = SegQueue::new();
 pub static OUTPUT_QUEUE: SegQueue<Packet> = SegQueue::new();
 pub static TPOOL_QUEUE: SegQueue<Work> = SegQueue::new();
-pub static WORK_QUEUES: [SegQueue<Packet>; TYPE_COUNT] = create_array!(SegQueue::new(); 4);
-pub static WORK_LOCKS: [AtomicBool; TYPE_COUNT] = create_array!(AtomicBool::new(false); 4);
+pub static WORK_QUEUES: [SegQueue<Packet>; TYPE_COUNT] = create_array!(SegQueue::new(); 258);
+pub static WORK_LOCKS: [AtomicBool; TYPE_COUNT] = create_array!(AtomicBool::new(false); 258);
 
 pub static TOKEN_WISE_MAP: SafeHashMap<usize, AtomicPtr<Packet>> = SafeHashMap::new();
 pub static SETTINGS: OnceLock<Settings> = OnceLock::new();
