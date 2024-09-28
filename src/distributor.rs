@@ -1,5 +1,4 @@
 use std::{
-    ptr::drop_in_place,
     sync::atomic::{AtomicPtr, Ordering},
     thread::{self, JoinHandle},
 };
@@ -43,7 +42,7 @@ impl Distributor {
 
         // If no work of current type in threadpool
         if work_lock
-            .compare_exchange(false, true, Ordering::Acquire, Ordering::Acquire)
+            .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
             .is_ok()
         {
             TPOOL_QUEUE.push(work);
@@ -69,7 +68,7 @@ impl Distributor {
                 // means it is still allocated in heap
                 // manually create box from it and drop
                 unsafe {
-                    drop_in_place(old_packet);
+                    let _ = Box::from_raw(old_packet);
                 }
             }
         } else {

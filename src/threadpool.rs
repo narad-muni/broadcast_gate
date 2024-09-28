@@ -7,7 +7,7 @@ use std::{
 use threadpool::ThreadPool;
 
 use crate::{
-    global::{TOKEN_WISE_MAP, TPOOL_QUEUE, WORK_LOCKS, WORK_QUEUES},
+    global::{OUTPUT_QUEUE, TOKEN_WISE_MAP, TPOOL_QUEUE, WORK_LOCKS, WORK_QUEUES},
     types::work::{Work, WorkType},
 };
 
@@ -44,14 +44,16 @@ impl ThreadPoolMaster {
 pub fn work_on_map(data: Work) {
     let value = TOKEN_WISE_MAP.get(&data.work_type.get_id()).unwrap();
 
-    let value = value.swap(ptr::null_mut(), Ordering::SeqCst);
+    let packet_ptr = value.swap(ptr::null_mut(), Ordering::SeqCst);
     unsafe {
         // Creating box from raw ptr is unsafe, because it could be null
         // however, we only ensure that this value is not null
-        let value = Box::from_raw(value);
+        let mut packet = Box::from_raw(packet_ptr);
 
         // Call associated function
-        (data.processing_fn)(*value);
+        (data.processing_fn)(&mut *packet);
+
+        OUTPUT_QUEUE.push(*packet);
     }
 }
 
@@ -59,10 +61,12 @@ pub fn work_on_queue(data: Work) {
     let work_queue = &WORK_QUEUES[data.work_type.get_id()];
     let work_lock = &WORK_LOCKS[data.work_type.get_id()];
 
-    while let Some(packet) = work_queue.pop() {
+    while let Some(mut packet) = work_queue.pop() {
         // println!("Data received in work_on_queue: {:?}", packet);
 
-        (data.processing_fn)(packet);
+        (data.processing_fn)(&mut packet);
+
+        OUTPUT_QUEUE.push(packet);
 
         if !work_queue.is_empty() {
             if TPOOL_QUEUE.is_empty() {
@@ -82,7 +86,7 @@ pub fn work_on_queue(data: Work) {
     // Check if queue has more work and we can still acquire lock
     if !work_queue.is_empty()
         && work_lock
-            .compare_exchange(false, true, Ordering::AcqRel, Ordering::Relaxed)
+            .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
             .is_ok()
     {
         // push to tpool

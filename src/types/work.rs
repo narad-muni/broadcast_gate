@@ -1,6 +1,6 @@
 use super::packet::Packet;
 
-pub type ProcessingFn = fn(Packet);
+pub type ProcessingFn = fn(&mut Packet);
 
 #[derive(Debug, Clone, Copy)]
 pub struct Work {
