@@ -3,7 +3,10 @@ use std::sync::{
     OnceLock,
 };
 
-use crate::types::{packet::Packet, safe_hashmap::SafeHashMap, settings::Settings, work::Work};
+use crate::types::{
+    packet::Packet, packet_structures::neq::BcastHeaders, safe_hashmap::SafeHashMap,
+    settings::Settings, work::Work,
+};
 use crossbeam::queue::SegQueue;
 use seq_macro::seq;
 
@@ -31,3 +34,4 @@ pub static WORK_LOCKS: [AtomicBool; TYPE_COUNT] = create_array!(AtomicBool::new(
 
 pub static TOKEN_WISE_MAP: SafeHashMap<usize, AtomicPtr<Packet>> = SafeHashMap::new();
 pub static SETTINGS: OnceLock<Settings> = OnceLock::new();
+pub static NSE_HEADER_SIZE: usize = size_of::<BcastHeaders>();

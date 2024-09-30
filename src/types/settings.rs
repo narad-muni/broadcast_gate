@@ -9,7 +9,7 @@ use serde::{
 
 #[derive(Deserialize, Clone)]
 pub struct Settings {
-    pub exchange: String,
+    pub exchange: Exchange,
 
     pub udp_auto_switch: bool,
     pub udp_switch_timeout: usize,
@@ -30,6 +30,14 @@ pub struct Settings {
     pub kafka_config_path: String,
 
     pub output_targets: OutputTargets,
+}
+
+#[derive(Deserialize, Clone, PartialEq)]
+pub enum Exchange {
+    NEQ,
+    NFO,
+    NCD,
+    BSE,
 }
 
 // Used for converting string array of outputs in config to bit flags

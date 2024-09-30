@@ -13,5 +13,5 @@ serde = "1.0.210"
 serde_json = "1.0.128"
 socket2 = "0.5.7"
 threadpool = "1.8.1"
-zerocopy = "0.7.35"
-zerocopy-derive = "0.7.35"
+twiddler = {git="https://github.com/narad-muni/twiddle_rs"}
+mylzo = {git="https://github.com/narad-muni/mylzo"}
