@@ -12,17 +12,17 @@ pub struct Work {
 pub enum WorkType {
     Compressed,
     Uncompressed,
-    SegmentWise(u16),
-    TokenWise(usize),
+    SegmentWise(u8),
+    TokenWise(i32),
 }
 
 impl WorkType {
     pub fn get_id(&self) -> usize {
         match self {
-            Self::Compressed => 0,
-            Self::Uncompressed => 1,
-            Self::SegmentWise(i) => 2 + *i as usize,
-            Self::TokenWise(i) => 3 + u16::MAX as usize + *i as usize, // Shouldn't be used
+            Self::Compressed => 1,
+            Self::Uncompressed => 2, // First element of queue is for uncompressed
+            Self::SegmentWise(i) => 3 + *i as usize, // each segment has its own queue
+            Self::TokenWise(i) => *i as usize, // Shouldn't be used on queue, only on map
         }
     }
 }
