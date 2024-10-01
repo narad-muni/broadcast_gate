@@ -35,7 +35,7 @@ impl UdpOutput {
 }
 
 impl OutputTrait for UdpOutput {
-    fn write(&mut self, data: Packet) {
+    fn write(&mut self, data: &Packet) {
         self.socket.write(&data.0).unwrap();
     }
 }

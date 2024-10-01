@@ -1,11 +1,13 @@
-use std::thread::{self, JoinHandle};
+use std::{
+    cell::UnsafeCell,
+    sync::atomic::{AtomicBool, Ordering},
+};
 
 use kafka_output::KafkaOutput;
 use std_out::StdOut;
 use udp_output::UdpOutput;
 
 use crate::{
-    global::OUTPUT_QUEUE,
     settings,
     types::{packet::Packet, settings::OutputTargets},
 };
@@ -14,45 +16,56 @@ pub mod kafka_output;
 pub mod std_out;
 pub mod udp_output;
 
-pub struct Output {}
+pub struct Output {
+    kafka: UnsafeCell<KafkaOutput>,
+    udp: UnsafeCell<UdpOutput>,
+    stdout: UnsafeCell<StdOut>,
+    lock: AtomicBool,
+    output_targets: OutputTargets,
+}
+
+unsafe impl Send for Output {}
+unsafe impl Sync for Output {}
 
 trait OutputTrait {
-    fn write(&mut self, data: Packet);
+    fn write(&mut self, data: &Packet);
 }
 
 impl Output {
     pub fn new() -> Self {
-        Self {}
+        let kafka = UnsafeCell::new(KafkaOutput::new());
+        let udp = UnsafeCell::new(UdpOutput::new());
+        let stdout = UnsafeCell::new(StdOut::new());
+        let output_targets = settings::get().output_targets.clone();
+
+        Self {
+            kafka,
+            udp,
+            stdout,
+            output_targets,
+            lock: AtomicBool::new(false),
+        }
     }
 
-    pub fn write(self) -> JoinHandle<()> {
-        thread::spawn(move || {
-            let mut kafka = KafkaOutput::new();
-            let mut udp = UdpOutput::new();
-            let mut stdout = StdOut::new();
+    pub fn write(&self, packet: &Packet) {
+        unsafe {
+            // Acquire lock
+            while self.lock.swap(true, Ordering::Relaxed) == false {}
 
-            let settings = settings::get();
-
-            loop {
-                if let Some(packet) = OUTPUT_QUEUE.pop() {
-                    if packet.0[0] == 1 {
-                        break;
-                    }
-                    if settings.output_targets.contains(OutputTargets::UDP) {
-                        udp.write(packet);
-                    }
-
-                    if settings.output_targets.contains(OutputTargets::KAFKA) {
-                        kafka.write(packet);
-                    }
-
-                    if settings.output_targets.contains(OutputTargets::STDOUT) {
-                        stdout.write(packet);
-                    }
-                } else {
-                    thread::yield_now();
-                }
+            if self.output_targets.contains(OutputTargets::UDP) {
+                (*self.udp.get()).write(packet);
             }
-        })
+
+            if self.output_targets.contains(OutputTargets::KAFKA) {
+                (*self.kafka.get()).write(packet);
+            }
+
+            if self.output_targets.contains(OutputTargets::STDOUT) {
+                (*self.stdout.get()).write(packet);
+            }
+
+            // release lock
+            self.lock.store(false, Ordering::Relaxed);
+        }
     }
 }

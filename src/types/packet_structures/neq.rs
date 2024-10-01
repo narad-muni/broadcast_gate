@@ -60,7 +60,15 @@ pub fn build_neq_struct(transaction_id: i16, buf: &[u8]) -> NeqBroadcastTransact
         9011 => NeqBroadcastTransactionMapping::BcastBrokerReactivated(bytes_to_struct(buf)),
         18130 => NeqBroadcastTransactionMapping::BcastSecurityStatusChg(bytes_to_struct(buf)),
         18201 => {
-            NeqBroadcastTransactionMapping::BcastMarketStatsReportDataCedtcR(bytes_to_struct(buf))
+            if buf[40] == b'H' {
+                NeqBroadcastTransactionMapping::BcastMarketStatsReportDataCedtcH(bytes_to_struct(
+                    buf,
+                ))
+            } else {
+                NeqBroadcastTransactionMapping::BcastMarketStatsReportDataCedtcR(bytes_to_struct(
+                    buf,
+                ))
+            }
         }
         18700 => NeqBroadcastTransactionMapping::BcastAuctionInquiryOut(bytes_to_struct(buf)),
         18703 => NeqBroadcastTransactionMapping::BcastTickerAndMktIndex(bytes_to_struct(buf)),

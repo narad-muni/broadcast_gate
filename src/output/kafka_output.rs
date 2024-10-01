@@ -45,7 +45,7 @@ impl KafkaOutput {
 }
 
 impl OutputTrait for KafkaOutput {
-    fn write(&mut self, data: Packet) {
+    fn write(&mut self, data: &Packet) {
         let payload = BaseRecord::to(&self.topic_name)
             .partition(self.partition_no)
             .key(&())

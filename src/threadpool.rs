@@ -7,7 +7,7 @@ use std::{
 use threadpool::ThreadPool;
 
 use crate::{
-    global::{OUTPUT_QUEUE, TOKEN_WISE_MAP, TPOOL_QUEUE, WORK_LOCKS, WORK_QUEUES},
+    global::{OUTPUT, TOKEN_WISE_MAP, TPOOL_QUEUE, WORK_LOCKS, WORK_QUEUES},
     types::work::{Work, WorkType},
 };
 
@@ -53,7 +53,7 @@ pub fn work_on_map(data: Work) {
         // Call associated function
         (data.processing_fn)(&mut *packet);
 
-        OUTPUT_QUEUE.push(*packet);
+        OUTPUT.write(&packet);
     }
 }
 
@@ -66,7 +66,7 @@ pub fn work_on_queue(data: Work) {
 
         (data.processing_fn)(&mut packet);
 
-        OUTPUT_QUEUE.push(packet);
+        OUTPUT.write(&packet);
 
         if !work_queue.is_empty() {
             if TPOOL_QUEUE.is_empty() {
