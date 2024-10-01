@@ -44,7 +44,7 @@ impl Packet {
 
                 offset += header.message_length as usize + SKIP_BYTES + size_of::<u16>();
 
-                let work_type = WorkType::Uncompressed;
+                let work_type = WorkType::NseUncompressed;
 
                 packets.push((packet, work_type));
             } else {

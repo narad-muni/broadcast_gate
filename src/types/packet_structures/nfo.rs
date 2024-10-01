@@ -73,7 +73,7 @@ pub fn build_nfo_struct(transaction_id: i16, buf: &[u8]) -> NfoBroadcastTransact
 }
 
 impl NfoBroadcastTransactionMapping {
-    pub fn tiwddle(&mut self) {
+    pub fn twiddle(&mut self) {
         match self {
             NfoBroadcastTransactionMapping::BcastContMsg(s) => s.twiddle(),
             NfoBroadcastTransactionMapping::BcastSecurityOpenPrice(s) => s.twiddle(),

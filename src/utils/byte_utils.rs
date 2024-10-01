@@ -17,3 +17,17 @@ pub fn struct_to_bytes<T>(s: &T, buffer: &mut [u8]) {
         ptr::copy_nonoverlapping(struct_ptr, buffer.as_mut_ptr(), mem::size_of::<T>());
     }
 }
+
+pub fn create_empty<T>() -> T {
+    unsafe { mem::zeroed() }
+}
+
+pub fn bytes_to_partial_struct<T>(s: &mut T, buffer: &[u8]) {
+    unsafe {
+        // Get unsafe mutable raw pointer
+        let struct_ptr = s as *mut T as *mut u8;
+
+        // Similar to memcpy
+        ptr::copy_nonoverlapping(buffer.as_ptr(), struct_ptr, buffer.len());
+    };
+}

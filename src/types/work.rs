@@ -10,8 +10,9 @@ pub struct Work {
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum WorkType {
-    Compressed,
-    Uncompressed,
+    BseCompressed,
+    BseUncompressed,
+    NseUncompressed,
     SegmentWise(u8),
     TokenWise(i32),
 }
@@ -19,8 +20,9 @@ pub enum WorkType {
 impl WorkType {
     pub fn get_id(&self) -> usize {
         match self {
-            Self::Compressed => 1,
-            Self::Uncompressed => 2, // First element of queue is for uncompressed
+            Self::BseCompressed => 0,
+            Self::BseUncompressed => 1,
+            Self::NseUncompressed => 2, // First element of queue is for uncompressed
             Self::SegmentWise(i) => 3 + *i as usize, // each segment has its own queue
             Self::TokenWise(i) => *i as usize, // Shouldn't be used on queue, only on map
         }

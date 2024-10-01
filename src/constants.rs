@@ -62,3 +62,13 @@ pub const MAX_BSE_CLOSE_PRICE_IDX: usize = 80;
 pub const MAX_UDP_BCAST_MSG_LEN: usize = 4088;
 pub const MAX_QUEUE_BLOCK_SIZE: usize = 4096;
 pub const MAX_SOCK_RECV_BUFFER_SIZE: usize = 1048576;
+
+// For BSE
+pub const U16_MAX: i16 = 32767;
+pub const BEST_BID_VALUE: i16 = 32766;
+pub const BEST_OFFER_VALUE: i16 = -32766;
+
+pub const MBP_UNCOMPRESSED_HEADER_LEN: usize = 28;
+pub const MBP_UNCOMPRESSED_DATA_LEN: usize = 56;
+pub const COMPLEX_MBP_UNCOMPRESSED_DATA_LEN: usize = 60;
+pub const DEBT_MBP_UNCOMPRESSED_DATA_LEN: usize = 68;

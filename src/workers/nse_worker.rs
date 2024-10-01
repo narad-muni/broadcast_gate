@@ -16,7 +16,7 @@ pub fn cast_and_twiddle_nfo(packet: &mut Packet) {
     header.twiddle();
 
     let mut nfo_struct = build_nfo_struct(header.trans_code, &packet.0[SKIP_BYTES..]);
-    nfo_struct.tiwddle();
+    nfo_struct.twiddle();
 
     struct_to_bytes(&nfo_struct, &mut packet.0);
 }

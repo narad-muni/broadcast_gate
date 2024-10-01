@@ -11,6 +11,7 @@ use crate::{
         settings::Exchange,
         work::{Work, WorkType},
     },
+    utils::byte_utils::bytes_to_struct,
     workers::{
         get_bse_processing_fn, get_ncd_processing_fn, get_neq_processing_fn, get_nfo_processing_fn,
     },
@@ -28,7 +29,7 @@ impl Distributor {
 
         // NSE or BSE processing function
         let processing_fn = match settings.exchange {
-            Exchange::BSE => todo!("BSE distributor"),
+            Exchange::BSE => Distributor::process_bse_packet,
             Exchange::NEQ => Distributor::process_neq_packet,
             Exchange::NFO => Distributor::process_nfo_packet,
             Exchange::NCD => Distributor::process_ncd_packet,
@@ -102,9 +103,16 @@ impl Distributor {
     }
 
     pub fn process_bse_packet(packet: Packet) {
-        todo!("BSE Implementation not completed");
+        let mut message_code: i32 = bytes_to_struct(&packet.0);
+        // Twiddle
+        message_code = message_code.to_be();
+
         // Create work
-        let work_type = WorkType::Uncompressed;
+        let work_type = match message_code {
+            // BcastMbp, BcastMbpComplexInst, BcastDebtMbp are of type compressed
+            2020 | 2021 | 2033 => WorkType::BseCompressed,
+            _ => WorkType::BseUncompressed,
+        };
 
         let processing_fn = get_bse_processing_fn(&work_type);
         let work = Work {
@@ -112,11 +120,7 @@ impl Distributor {
             processing_fn,
         };
 
-        if let WorkType::TokenWise(_) = work_type {
-            Distributor::distribute_to_map(packet, work);
-        } else {
-            Distributor::distribute_to_queue(packet, work);
-        }
+        Distributor::distribute_to_queue(packet, work);
     }
 
     pub fn distribute_to_queue(packet: Packet, work: Work) {
