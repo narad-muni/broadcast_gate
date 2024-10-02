@@ -47,6 +47,7 @@ bitflags! {
         const UDP = 1;
         const KAFKA = 2;
         const STDOUT = 4;
+        const COUNTER = 8;
     }
 }
 
@@ -97,6 +98,7 @@ impl FromStr for OutputTargets {
             "udp" => Ok(OutputTargets::UDP),
             "kafka" => Ok(OutputTargets::KAFKA),
             "stdout" => Ok(OutputTargets::STDOUT),
+            "counter" => Ok(OutputTargets::COUNTER),
             _ => Err("Invalid target"),
         }
     }

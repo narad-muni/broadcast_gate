@@ -6,6 +6,7 @@ use std::{
 use kafka_output::KafkaOutput;
 use std_out::StdOut;
 use udp_output::UdpOutput;
+use counter::Counter;
 
 use crate::{
     settings,
@@ -15,11 +16,13 @@ use crate::{
 pub mod kafka_output;
 pub mod std_out;
 pub mod udp_output;
+pub mod counter;
 
 pub struct Output {
     kafka: UnsafeCell<KafkaOutput>,
     udp: UnsafeCell<UdpOutput>,
     stdout: UnsafeCell<StdOut>,
+    counter: UnsafeCell<Counter>,
     lock: AtomicBool,
     output_targets: OutputTargets,
 }
@@ -36,12 +39,14 @@ impl Output {
         let kafka = UnsafeCell::new(KafkaOutput::new());
         let udp = UnsafeCell::new(UdpOutput::new());
         let stdout = UnsafeCell::new(StdOut::new());
+        let counter = UnsafeCell::new(Counter::new());
         let output_targets = settings::get().output_targets.clone();
 
         Self {
             kafka,
             udp,
             stdout,
+            counter,
             output_targets,
             lock: AtomicBool::new(false),
         }
@@ -62,6 +67,10 @@ impl Output {
 
             if self.output_targets.contains(OutputTargets::STDOUT) {
                 (*self.stdout.get()).write(packet);
+            }
+
+            if self.output_targets.contains(OutputTargets::COUNTER) {
+                (*self.counter.get()).write(packet);
             }
 
             // release lock

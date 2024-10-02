@@ -1,3 +1,5 @@
+use std::mem::offset_of;
+
 use rdkafka::message::ToBytes;
 
 use crate::{
@@ -39,10 +41,14 @@ impl Packet {
             if compression_data.compression_len == 0 {
                 let packet = Packet(compression_data.broadcast_data);
 
-                let mut header: BcastHeaders = bytes_to_struct(&packet.0[SKIP_BYTES..]);
-                header.twiddle();
+                // Extract message length to increase offset
+                let start = SKIP_BYTES + offset_of!(BcastHeaders, message_length);
+                let end = start + size_of::<i16>();
 
-                offset += header.message_length as usize + SKIP_BYTES + size_of::<u16>();
+                let mut message_length: i16 = bytes_to_struct(&packet.0[start..end]);
+                message_length = message_length.to_be();
+
+                offset += message_length as usize + SKIP_BYTES + size_of::<u16>();
 
                 let work_type = WorkType::NseUncompressed;
 

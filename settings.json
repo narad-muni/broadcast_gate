@@ -1,5 +1,5 @@
 {
-  "exchange": "NEQ",
+  "exchange": "NFO",
   "udp_auto_switch": false,
   "udp_switch_timeout": 5,
   "udp_local_ip": "0.0.0.0",
@@ -14,5 +14,5 @@
   "kafka_brokers": "127.0.0.1:9092",
   "kafka_topic_name": "test",
   "kafka_config_path": "kafka_config.json",
-  "output_targets": ["stdout"]
+  "output_targets": ["counter"]
 }
