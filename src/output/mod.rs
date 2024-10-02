@@ -3,20 +3,20 @@ use std::{
     sync::atomic::{AtomicBool, Ordering},
 };
 
+use counter::Counter;
 use kafka_output::KafkaOutput;
 use std_out::StdOut;
 use udp_output::UdpOutput;
-use counter::Counter;
 
 use crate::{
     settings,
     types::{packet::Packet, settings::OutputTargets},
 };
 
+pub mod counter;
 pub mod kafka_output;
 pub mod std_out;
 pub mod udp_output;
-pub mod counter;
 
 pub struct Output {
     kafka: UnsafeCell<KafkaOutput>,

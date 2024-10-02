@@ -31,3 +31,7 @@ pub fn bytes_to_partial_struct<T>(s: &mut T, buffer: &[u8]) {
         ptr::copy_nonoverlapping(buffer.as_ptr(), struct_ptr, buffer.len());
     };
 }
+
+pub fn bytes_to_struct_mut<T>(buf: &mut [u8]) -> &mut T {
+    unsafe { &mut *(buf.as_mut_ptr() as *mut T) }
+}

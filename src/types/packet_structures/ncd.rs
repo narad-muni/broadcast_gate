@@ -1,4 +1,7 @@
-use crate::{constants::*, utils::byte_utils::bytes_to_struct};
+use crate::{
+    constants::*,
+    utils::byte_utils::{bytes_to_struct, struct_to_bytes},
+};
 use twiddler::Twiddle;
 
 use super::nfo::{
@@ -120,6 +123,61 @@ impl NcdBroadcastTransactionMapping {
             NcdBroadcastTransactionMapping::BcastTurnoverExceeded(s) => s.twiddle(),
             NcdBroadcastTransactionMapping::BcastBrokerReactivated(s) => s.twiddle(),
         };
+    }
+
+    pub fn to_bytes(&self, buffer: &mut [u8]) {
+        match self {
+            NcdBroadcastTransactionMapping::BcastContMsg(s) => struct_to_bytes(s, buffer),
+            NcdBroadcastTransactionMapping::BcastSecurityOpenPrice(s) => struct_to_bytes(s, buffer),
+            NcdBroadcastTransactionMapping::BcastJrnlVctMsg(s) => struct_to_bytes(s, buffer),
+            NcdBroadcastTransactionMapping::BcastAssetUpdtIntRateChg(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NcdBroadcastTransactionMapping::BcastOpenMessage(s) => struct_to_bytes(s, buffer),
+            NcdBroadcastTransactionMapping::BcastCloseMessage(s) => struct_to_bytes(s, buffer),
+            NcdBroadcastTransactionMapping::BcastPostcloseMsg(s) => struct_to_bytes(s, buffer),
+            NcdBroadcastTransactionMapping::BcastPreopenShutdownMsg(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NcdBroadcastTransactionMapping::BcastNormalMktPreopenEnded(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NcdBroadcastTransactionMapping::BcastCircuitCheck(s) => struct_to_bytes(s, buffer),
+            NcdBroadcastTransactionMapping::BcastMktMvmtCmOiIn(s) => struct_to_bytes(s, buffer),
+            NcdBroadcastTransactionMapping::BcastMboMbpUpdate(s) => struct_to_bytes(s, buffer),
+            NcdBroadcastTransactionMapping::BcastMwRoundRobin(s) => struct_to_bytes(s, buffer),
+            NcdBroadcastTransactionMapping::BcastTickerAndMktIndex(s) => struct_to_bytes(s, buffer),
+            NcdBroadcastTransactionMapping::BcastIndustryIndexUpdate(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NcdBroadcastTransactionMapping::BcastSystemInformationOut(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NcdBroadcastTransactionMapping::BcastOnlyMbp(s) => struct_to_bytes(s, buffer),
+            NcdBroadcastTransactionMapping::BcastSpdMbpDelta(s) => struct_to_bytes(s, buffer),
+            NcdBroadcastTransactionMapping::BcastCurrencyAssets(s) => struct_to_bytes(s, buffer),
+            NcdBroadcastTransactionMapping::BcastInterestAssets(s) => struct_to_bytes(s, buffer),
+            NcdBroadcastTransactionMapping::BcastQtyMbaDelta(s) => struct_to_bytes(s, buffer),
+            NcdBroadcastTransactionMapping::BcastPriceMbaDelta(s) => struct_to_bytes(s, buffer),
+            NcdBroadcastTransactionMapping::BcastTradeExecutionRange(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NcdBroadcastTransactionMapping::BcastSecurityMstrChg(s) => struct_to_bytes(s, buffer),
+            NcdBroadcastTransactionMapping::BcastSecMstrChngPeriodic(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NcdBroadcastTransactionMapping::BcastPartMstrChg(s) => struct_to_bytes(s, buffer),
+            NcdBroadcastTransactionMapping::BcastSecurityStatusChgPreopen(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NcdBroadcastTransactionMapping::BcastSecurityStatusChg(s) => struct_to_bytes(s, buffer),
+            NcdBroadcastTransactionMapping::BcastInstrMstrChg(s) => struct_to_bytes(s, buffer),
+            NcdBroadcastTransactionMapping::BcastSpdMstrChgPeriodic(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NcdBroadcastTransactionMapping::BcastTurnoverExceeded(s) => struct_to_bytes(s, buffer),
+            NcdBroadcastTransactionMapping::BcastBrokerReactivated(s) => struct_to_bytes(s, buffer),
+        }
     }
 }
 

@@ -62,6 +62,8 @@ pub const MAX_BSE_CLOSE_PRICE_IDX: usize = 80;
 pub const MAX_UDP_BCAST_MSG_LEN: usize = 4088;
 pub const MAX_QUEUE_BLOCK_SIZE: usize = 4096;
 pub const MAX_SOCK_RECV_BUFFER_SIZE: usize = 1048576;
+pub const BCAST_ONLY_MBP: i16 = 7208;
+pub const BCAST_MBO_MBP_UPDATE: i16 = 7200;
 
 // For BSE
 pub const U16_MAX: i16 = 32767;
@@ -72,3 +74,9 @@ pub const MBP_UNCOMPRESSED_HEADER_LEN: usize = 28;
 pub const MBP_UNCOMPRESSED_DATA_LEN: usize = 56;
 pub const COMPLEX_MBP_UNCOMPRESSED_DATA_LEN: usize = 60;
 pub const DEBT_MBP_UNCOMPRESSED_DATA_LEN: usize = 68;
+
+// Custom types
+
+pub const MAX_MARKET_DEPTH_IDX: usize = 200; // Define this constant as per your requirement
+pub const TIMESTAMP_LEN: usize = 8; // Define this constant as per your requirement
+pub const MAX_BUY_SELL_DEPTH_IDX: usize = 5;

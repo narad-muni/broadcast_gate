@@ -3,13 +3,13 @@ use std::mem::offset_of;
 use rdkafka::message::ToBytes;
 
 use crate::{
-    constants::{BUF_SIZE, SKIP_BYTES},
+    constants::{BCAST_ONLY_MBP, BUF_SIZE, SKIP_BYTES},
     global::NSE_HEADER_SIZE,
-    utils::byte_utils::bytes_to_struct,
+    utils::byte_utils::{bytes_to_struct, bytes_to_struct_mut},
 };
 
 use super::{
-    packet_structures::{neq::BcastHeaders, CompressionData, PackData},
+    packet_structures::{neq::BcastHeaders, nfo::BcastOnlyMBP, CompressionData, PackData},
     work::WorkType,
 };
 
@@ -37,6 +37,9 @@ impl Packet {
                 bytes_to_struct(&packet.pack_data[offset..]);
             compression_data.twiddle();
 
+            // Increment for compression length field, which is u16, 2 bytes
+            offset += size_of::<u16>();
+
             // Packet is not compressed
             if compression_data.compression_len == 0 {
                 let packet = Packet(compression_data.broadcast_data);
@@ -48,6 +51,7 @@ impl Packet {
                 let mut message_length: i16 = bytes_to_struct(&packet.0[start..end]);
                 message_length = message_length.to_be();
 
+                // Increment offset by each message
                 offset += message_length as usize + SKIP_BYTES + size_of::<u16>();
 
                 let work_type = WorkType::NseUncompressed;
@@ -65,13 +69,13 @@ impl Packet {
                 mylzo::decompress(&mut compressed_packet, &mut decompressed_packet)
                     .expect("Error decompressing packet");
 
-                let packet = Packet(decompressed_packet);
+                let mut packet = Packet(decompressed_packet);
 
                 let mut bcast_header: BcastHeaders = bytes_to_struct(&packet.0[SKIP_BYTES..]);
                 bcast_header.twiddle();
 
                 // Fetch worktype for compressed packet
-                let work_type = if bcast_header.trans_code == 7208 {
+                let work_type = if bcast_header.trans_code == BCAST_ONLY_MBP {
                     let token_start = NSE_HEADER_SIZE + SKIP_BYTES + size_of::<i16>();
                     let token_end = token_start + size_of::<i32>();
 
@@ -86,10 +90,36 @@ impl Packet {
                     WorkType::SegmentWise(segment)
                 };
 
+                // For 7208, has multiple records
+                // Seperate each token for parallel processing
+                if let WorkType::TokenWise(_) = work_type {
+                    let start = offset_of!(BcastOnlyMBP, no_of_records);
+                    let end = start + size_of::<i16>();
+
+                    let no_of_records: i16 = bytes_to_struct(&packet.0[start..end]);
+
+                    // If more than one record
+                    // Push first record into packet by setting no of records as 0
+                    // increment it and re add same packet
+                    if no_of_records > 1 {
+                        // Clone packet
+                        // Set no of records to zero and push
+                        let mut packet = packet.clone();
+
+                        // Mutable ref to slice
+                        let no_of_records = bytes_to_struct_mut::<i16>(&mut packet.0[start..end]);
+                        *no_of_records = 0;
+
+                        packets.push((packet, work_type));
+                    }
+
+                    // Set no of records to 1, for original packet
+                    let no_of_records = bytes_to_struct_mut::<i16>(&mut packet.0[start..end]);
+                    *no_of_records = 1;
+                }
+
                 packets.push((packet, work_type));
             }
-
-            offset += size_of::<u16>();
         }
 
         packets

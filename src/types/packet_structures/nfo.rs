@@ -1,4 +1,7 @@
-use crate::{constants::*, utils::byte_utils::bytes_to_struct};
+use crate::{
+    constants::*,
+    utils::byte_utils::{bytes_to_struct, struct_to_bytes},
+};
 use twiddler::Twiddle;
 
 #[derive(Debug)]
@@ -110,7 +113,115 @@ impl NfoBroadcastTransactionMapping {
             NfoBroadcastTransactionMapping::BcastLimitPriceProtectionRange(s) => s.twiddle(),
         }
     }
+
+    pub fn to_bytes(&self, buffer: &mut [u8]) {
+        match self {
+            NfoBroadcastTransactionMapping::BcastContMsg(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastSecurityOpenPrice(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastJrnlVctMsg(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastAssetUpdtIntRateChg(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NfoBroadcastTransactionMapping::BcastOpenMessage(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastCloseMessage(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastPostcloseMsg(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastPreopenShutdownMsg(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NfoBroadcastTransactionMapping::BcastNormalMktPreopenEnded(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NfoBroadcastTransactionMapping::BcastCircuitCheck(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastMktMvmtCmOiIn(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastMboMbpUpdate(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastMwRoundRobin(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastTickerAndMktIndex(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastIndustryIndexUpdate(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NfoBroadcastTransactionMapping::BcastSystemInformationOut(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NfoBroadcastTransactionMapping::BcastOnlyMbp(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastSpdMbpDelta(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastCurrencyAssets(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastInterestAssets(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastQtyMbaDelta(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastPriceMbaDelta(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastTradeExecutionRange(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NfoBroadcastTransactionMapping::BcastSecurityMstrChg(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastSecMstrChngPeriodic(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NfoBroadcastTransactionMapping::BcastPartMstrChg(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastSecurityStatusChgPreopen(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NfoBroadcastTransactionMapping::BcastSecurityStatusChg(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastInstrMstrChg(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastSpdMstrChgPeriodic(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NfoBroadcastTransactionMapping::BcastTurnoverExceeded(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastBrokerReactivated(s) => struct_to_bytes(s, buffer),
+            NfoBroadcastTransactionMapping::BcastLimitPriceProtectionRange(s) => {
+                struct_to_bytes(s, buffer)
+            }
+        }
+    }
 }
+
+// Custom type for output
+#[derive(Debug, Twiddle, Clone, Copy)]
+#[repr(C, packed(2))]
+pub struct TagMarketDepthInfo {
+    pub qty: i64,
+    pub price: i32,
+    pub number_of_orders: i16,
+}
+
+#[derive(Debug, Twiddle, Clone, Copy)]
+#[repr(C, packed(2))]
+pub struct TagMessageHeader {
+    pub message_code: i32,
+    pub transaction_type: i16,
+    pub log_time: i32,
+    pub alpha_char: [u8; ALPHA_CHAR_LEN],
+    pub trader_id: i32,
+    pub error_code: i16,
+    pub timestamp: i64,
+    pub timestamp1: [u8; TIMESTAMP_LEN],
+    pub timestamp2: [u8; TIMESTAMP_LEN],
+    pub message_length: i16,
+}
+
+#[derive(Debug, Twiddle, Clone, Copy)]
+#[repr(C, packed(2))]
+pub struct TagMarketPictureBroadcast {
+    pub msg_header: TagMessageHeader,
+    pub token: i64,
+    pub total_buy_qty: i64,
+    pub total_sell_qty: i64,
+    pub volume_traded_today: i64,
+    pub open_price: i32,
+    pub close_price: i32,
+    pub high_price: i32,
+    pub low_price: i32,
+    pub ltp: i32,
+    pub ltq: i32,
+    pub ltt: i32,
+    pub atp: i32,
+    pub indicative_close_price: i32,
+    pub lut: i32,
+    pub buy_depth_count: i32,
+    pub sell_depth_count: i32,
+    pub trading_status: i16,
+    pub market_depth_info: [TagMarketDepthInfo; MAX_MARKET_DEPTH_IDX],
+}
+
+// Custom type for output
 
 #[repr(C, packed(2))]
 #[derive(Debug, Twiddle, Clone, Copy)]
@@ -576,33 +687,33 @@ pub struct BcastMBOInfo {
 #[repr(C, packed(2))]
 #[derive(Debug, Twiddle, Clone, Copy)]
 pub struct BcastInteractiveMBOData {
-    token: i32,
-    book_type: i16,
-    trading_status: i16,
-    volume_traded_today: u32,
-    last_traded_price: i32,
-    net_change_indicator: u8,
-    net_price_change_from_closing_price: i32,
-    last_trade_quantity: i32,
-    last_trade_time: i32,
-    average_trade_price: i32,
-    auction_number: i16,
-    auction_status: i16,
-    initiator_type: i16,
-    initiator_price: i32,
-    initiator_quantity: i32,
-    auction_price: i32,
-    auction_quantity: i32,
-    mbo_info: [BcastMBOInfo; MAX_MBOINFO_IDX], // 10
+    pub token: i32,
+    pub book_type: i16,
+    pub trading_status: i16,
+    pub volume_traded_today: u32,
+    pub last_traded_price: i32,
+    pub net_change_indicator: u8,
+    pub net_price_change_from_closing_price: i32,
+    pub last_trade_quantity: i32,
+    pub last_trade_time: i32,
+    pub average_trade_price: i32,
+    pub auction_number: i16,
+    pub auction_status: i16,
+    pub initiator_type: i16,
+    pub initiator_price: i32,
+    pub initiator_quantity: i32,
+    pub auction_price: i32,
+    pub auction_quantity: i32,
+    pub mbo_info: [BcastMBOInfo; MAX_MBOINFO_IDX], // 10
 }
 
 #[repr(C, packed(2))]
 #[derive(Debug, Twiddle, Clone, Copy)]
 pub struct BcastMBPInfo {
-    qty: i32,
-    price: i32,
-    number_of_orders: i16,
-    bb_buy_sell_flag: i16,
+    pub qty: i32,
+    pub price: i32,
+    pub number_of_orders: i16,
+    pub bb_buy_sell_flag: i16,
 }
 
 #[repr(C, packed(2))]
@@ -619,42 +730,42 @@ pub struct BcastMBPIndicator {
 #[repr(C, packed(2))]
 #[derive(Debug, Twiddle, Clone, Copy)]
 pub struct BcastInteractiveMBPData {
-    token: i32,
-    book_type: i16,
-    trading_status: i16,
-    volume_traded_today: u32,
-    last_traded_price: i32,
-    net_change_indicator: u8,
-    filler: u8,
-    net_price_change_from_closing_price: i32,
-    last_trade_quantity: i32,
-    last_trade_time: i32,
-    average_trade_price: i32,
-    auction_number: i16,
-    auction_status: i16,
-    initiator_type: i16,
-    initiator_price: i32,
-    initiator_quantity: i32,
-    auction_price: i32,
-    auction_quantity: i32,
-    mbp_info: [BcastMBPInfo; MAX_MBPINFO_IDX],
-    bb_total_buy_flag: i16,
-    bb_total_sell_flag: i16,
-    total_buy_quantity: f64,
-    total_sell_quantity: f64,
-    mbp_indicator: BcastMBPIndicator,
-    closing_price: i32,
-    open_price: i32,
-    high_price: i32,
-    low_price: i32,
+    pub token: i32,
+    pub book_type: i16,
+    pub trading_status: i16,
+    pub volume_traded_today: u32,
+    pub last_traded_price: i32,
+    pub net_change_indicator: u8,
+    pub filler: u8,
+    pub net_price_change_from_closing_price: i32,
+    pub last_trade_quantity: i32,
+    pub last_trade_time: i32,
+    pub average_trade_price: i32,
+    pub auction_number: i16,
+    pub auction_status: i16,
+    pub initiator_type: i16,
+    pub initiator_price: i32,
+    pub initiator_quantity: i32,
+    pub auction_price: i32,
+    pub auction_quantity: i32,
+    pub mbp_info: [BcastMBPInfo; MAX_MBPINFO_IDX],
+    pub bb_total_buy_flag: i16,
+    pub bb_total_sell_flag: i16,
+    pub total_buy_quantity: f64,
+    pub total_sell_quantity: f64,
+    pub mbp_indicator: BcastMBPIndicator,
+    pub closing_price: i32,
+    pub open_price: i32,
+    pub high_price: i32,
+    pub low_price: i32,
 }
 
 #[repr(C, packed(2))]
 #[derive(Debug, Twiddle, Clone, Copy)]
 pub struct BcastOnlyMBP {
-    bcast_header: BcastHeaders,
-    no_of_records: i16,
-    mbp_data: [BcastInteractiveMBPData; MAX_MBP_DATA_IDX], // 2
+    pub bcast_header: BcastHeaders,
+    pub no_of_records: i16,
+    pub mbp_data: [BcastInteractiveMBPData; MAX_MBP_DATA_IDX], // 2
 }
 
 #[repr(C, packed(2))]
@@ -671,16 +782,16 @@ pub struct BcastMBOMBPIndicator {
 #[repr(C, packed(2))]
 #[derive(Debug, Twiddle, Clone, Copy)]
 pub struct BcastMBOMBP {
-    bcast_header: BcastHeaders,
-    mbo_data: BcastInteractiveMBOData,
-    mbp_info: [BcastMBPInfo; MAX_MBPINFO_IDX], // 10
-    lf_total_buy_quantity: f64,
-    lf_total_sell_quantity: f64,
-    mbombp_indicator: BcastMBOMBPIndicator,
-    closing_price: i32,
-    open_price: i32,
-    high_price: i32,
-    low_price: i32,
+    pub bcast_header: BcastHeaders,
+    pub mbo_data: BcastInteractiveMBOData,
+    pub mbp_info: [BcastMBPInfo; MAX_MBPINFO_IDX], // 10
+    pub lf_total_buy_quantity: f64,
+    pub lf_total_sell_quantity: f64,
+    pub mbombp_indicator: BcastMBOMBPIndicator,
+    pub closing_price: i32,
+    pub open_price: i32,
+    pub high_price: i32,
+    pub low_price: i32,
 }
 
 #[repr(C, packed(2))]

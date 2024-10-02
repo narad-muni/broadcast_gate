@@ -1,5 +1,10 @@
-use crate::{constants::*, utils::byte_utils::bytes_to_struct};
+use crate::{
+    constants::*,
+    utils::byte_utils::{bytes_to_struct, struct_to_bytes},
+};
 use twiddler::Twiddle;
+
+use super::nfo::BcastMBOMBP;
 
 #[derive(Debug)]
 pub enum NeqBroadcastTransactionMapping {
@@ -115,6 +120,61 @@ impl NeqBroadcastTransactionMapping {
             NeqBroadcastTransactionMapping::BcastOnlyMbp(s) => s.twiddle(),
             NeqBroadcastTransactionMapping::BcastBuyBack(s) => s.twiddle(),
             NeqBroadcastTransactionMapping::BcastSecurityMstrChg(s) => s.twiddle(),
+        }
+    }
+
+    pub fn to_bytes(&self, buffer: &mut [u8]) {
+        match self {
+            NeqBroadcastTransactionMapping::BcastContMsg(s) => struct_to_bytes(s, buffer),
+            NeqBroadcastTransactionMapping::BcastJrnlVctMsg(s) => struct_to_bytes(s, buffer),
+            NeqBroadcastTransactionMapping::BcastOpenMessage(s) => struct_to_bytes(s, buffer),
+            NeqBroadcastTransactionMapping::BcastCloseMessage(s) => struct_to_bytes(s, buffer),
+            NeqBroadcastTransactionMapping::BcastPreopenShutdownMsg(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NeqBroadcastTransactionMapping::BcastNormalMktPreopenEnded(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NeqBroadcastTransactionMapping::BcastAuctionStatusChange(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NeqBroadcastTransactionMapping::BcastMboMbpCedtc(s) => struct_to_bytes(s, buffer),
+            NeqBroadcastTransactionMapping::BcastMwRoundRobinCedtc(s) => struct_to_bytes(s, buffer),
+            NeqBroadcastTransactionMapping::BcastTickerAndMktIndex(s) => struct_to_bytes(s, buffer),
+            NeqBroadcastTransactionMapping::BcastSystemInformationOut(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NeqBroadcastTransactionMapping::BcastOnlyMbpCedtc(s) => struct_to_bytes(s, buffer),
+            NeqBroadcastTransactionMapping::BcastCallAuctionOrdCxlUpdate(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NeqBroadcastTransactionMapping::BcastCallAuctionMbpCedtc(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NeqBroadcastTransactionMapping::BcastCaMwCedtc(s) => struct_to_bytes(s, buffer),
+            NeqBroadcastTransactionMapping::BcastIndices(s) => struct_to_bytes(s, buffer),
+            NeqBroadcastTransactionMapping::BcastIndicesVix(s) => struct_to_bytes(s, buffer),
+            NeqBroadcastTransactionMapping::BcastPartMstrChg(s) => struct_to_bytes(s, buffer),
+            NeqBroadcastTransactionMapping::BcastSymbolStatusChangeAction(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NeqBroadcastTransactionMapping::BcastIndicativeIndices(s) => struct_to_bytes(s, buffer),
+            NeqBroadcastTransactionMapping::BcastTurnoverExceeded(s) => struct_to_bytes(s, buffer),
+            NeqBroadcastTransactionMapping::BcastBrokerReactivated(s) => struct_to_bytes(s, buffer),
+            NeqBroadcastTransactionMapping::BcastMarketStatsReportDataCedtcH(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NeqBroadcastTransactionMapping::BcastMarketStatsReportDataCedtcR(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NeqBroadcastTransactionMapping::BcastAuctionInquiryOut(s) => struct_to_bytes(s, buffer),
+            NeqBroadcastTransactionMapping::BcastSecurityStatusChg(s) => struct_to_bytes(s, buffer),
+            NeqBroadcastTransactionMapping::BcastSecurityStatusChgPreopen(s) => {
+                struct_to_bytes(s, buffer)
+            }
+            NeqBroadcastTransactionMapping::BcastOnlyMbp(s) => struct_to_bytes(s, buffer),
+            NeqBroadcastTransactionMapping::BcastBuyBack(s) => struct_to_bytes(s, buffer),
+            NeqBroadcastTransactionMapping::BcastSecurityMstrChg(s) => struct_to_bytes(s, buffer),
         }
     }
 }
@@ -401,10 +461,10 @@ pub struct BcastMBPInfo {
 #[derive(Debug, Twiddle, Clone, Copy)]
 #[repr(C, packed(2))]
 pub struct BcastMBPInfoCEDTC {
-    qty: i64,
-    price: i32,
-    number_of_orders: i16,
-    bb_buy_sell_flag: i16,
+    pub qty: i64,
+    pub price: i32,
+    pub number_of_orders: i16,
+    pub bb_buy_sell_flag: i16,
 }
 
 #[derive(Debug, Twiddle, Clone, Copy)]
@@ -478,69 +538,51 @@ pub struct BcastInteractiveMBPData {
 #[derive(Debug, Twiddle, Clone, Copy)]
 #[repr(C, packed(2))]
 pub struct BcastOnlyMBP {
-    bcast_header: BcastHeaders,
-    no_of_records: i16,
-    mbp_data: [BcastInteractiveMBPData; MAX_MBP_DATA_IDX],
+    pub bcast_header: BcastHeaders,
+    pub no_of_records: i16,
+    pub mbp_data: [BcastInteractiveMBPData; MAX_MBP_DATA_IDX],
 }
 
 #[derive(Debug, Twiddle, Clone, Copy)]
 #[repr(C, packed(2))]
 pub struct BcastInteractiveMBPDataCEDTC {
-    token: i32,
-    book_type: i16,
-    trading_status: i16,
-    volume_traded_today: i64,
-    last_traded_price: i32,
-    net_change_indicator: u8,
-    filler: u8,
-    net_price_change_from_closing_price: i32,
-    last_trade_quantity: i32,
-    last_trade_time: i32,
-    average_trade_price: i32,
-    auction_number: i16,
-    auction_status: i16,
-    initiator_type: i16,
-    initiator_price: i32,
-    initiator_quantity: i32,
-    auction_price: i32,
-    auction_quantity: i32,
-    mbp_info: [BcastMBPInfoCEDTC; MAX_MBPINFO_IDX],
-    bb_total_buy_flag: i16,
-    bb_total_sell_flag: i16,
-    total_buy_quantity: i64,
-    total_sell_quantity: i64,
-    mbp_indicator: BcastMBPIndicator,
-    closing_price: i32,
-    open_price: i32,
-    high_price: i32,
-    low_price: i32,
-    indicative_closing_price: i32,
+    pub token: i32,
+    pub book_type: i16,
+    pub trading_status: i16,
+    pub volume_traded_today: i64,
+    pub last_traded_price: i32,
+    pub net_change_indicator: u8,
+    pub filler: u8,
+    pub net_price_change_from_closing_price: i32,
+    pub last_trade_quantity: i32,
+    pub last_trade_time: i32,
+    pub average_trade_price: i32,
+    pub auction_number: i16,
+    pub auction_status: i16,
+    pub initiator_type: i16,
+    pub initiator_price: i32,
+    pub initiator_quantity: i32,
+    pub auction_price: i32,
+    pub auction_quantity: i32,
+    pub mbp_info: [BcastMBPInfoCEDTC; MAX_MBPINFO_IDX],
+    pub bb_total_buy_flag: i16,
+    pub bb_total_sell_flag: i16,
+    pub total_buy_quantity: i64,
+    pub total_sell_quantity: i64,
+    pub mbp_indicator: BcastMBPIndicator,
+    pub closing_price: i32,
+    pub open_price: i32,
+    pub high_price: i32,
+    pub low_price: i32,
+    pub indicative_closing_price: i32,
 }
 
 #[derive(Debug, Twiddle, Clone, Copy)]
 #[repr(C, packed(2))]
 pub struct BcastOnlyMBPCEDTC {
-    bcast_header: BcastHeaders,
-    no_of_records: i16,
-    mbp_data: [BcastInteractiveMBPDataCEDTC; MAX_MBP_DATA_IDX],
-}
-
-#[derive(Debug, Twiddle, Clone, Copy)]
-#[repr(C, packed(2))]
-pub struct BcastMBOMBP {
-    bcast_header: BcastHeaders,
-    mbo_data: BcastInteractiveMBOData,
-    mbp_info: [BcastMBPInfo; MAX_MBPINFO_IDX],
-    bb_total_buy_flag: i16,
-    bb_total_sell_flag: i16,
-    total_buy_quantity: i64,
-    total_sell_quantity: i64,
-    mbombp_indicator: BcastMBOMBPIndicator,
-    closing_price: i32,
-    open_price: i32,
-    high_price: i32,
-    low_price: i32,
-    reserved: [u8; 4],
+    pub bcast_header: BcastHeaders,
+    pub no_of_records: i16,
+    pub mbp_data: [BcastInteractiveMBPDataCEDTC; MAX_MBP_DATA_IDX],
 }
 
 #[derive(Debug, Twiddle, Clone, Copy)]
