@@ -1,5 +1,5 @@
 {
-  "exchange": "BSE",
+  "exchange": "NFO",
   "udp_auto_switch": false,
   "udp_switch_timeout": 5,
   "udp_local_ip": "0.0.0.0",

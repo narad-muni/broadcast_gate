@@ -1,5 +1,5 @@
 use crate::{
-    constants::{MAX_BUY_SELL_DEPTH_IDX, MAX_MARKET_DEPTH_IDX, SKIP_BYTES},
+    constants::{MAX_BUY_SELL_DEPTH_IDX, MAX_MBPINFO_IDX, SKIP_BYTES},
     types::{
         packet::Packet,
         packet_structures::{
@@ -96,14 +96,14 @@ pub fn convert_mbo_mbp(bcast_mbo_mbp: &mut BcastMBOMBP) -> TagMarketPictureBroad
     let mut mkt_depth_cnt = 0;
 
     let mut i = 0;
-    while i < MAX_MARKET_DEPTH_IDX {
+    while i < MAX_MBPINFO_IDX {
         if bcast_mbo_mbp.mbp_info[i].qty > 0 {
             market_depth_info[mkt_depth_cnt].qty = bcast_mbo_mbp.mbp_info[i].qty as i64;
             market_depth_info[mkt_depth_cnt].price = bcast_mbo_mbp.mbp_info[i].price;
             market_depth_info[mkt_depth_cnt].number_of_orders =
                 bcast_mbo_mbp.mbp_info[i].number_of_orders;
 
-            if i >= MAX_MARKET_DEPTH_IDX - 1 {
+            if i <= MAX_BUY_SELL_DEPTH_IDX - 1 {
                 buy_depth_count += 1;
             } else {
                 sell_depth_count += 1;
@@ -115,6 +115,8 @@ pub fn convert_mbo_mbp(bcast_mbo_mbp: &mut BcastMBOMBP) -> TagMarketPictureBroad
         } else {
             break;
         }
+
+        i += 1;
     }
 
     let picture = TagMarketPictureBroadcast {
@@ -166,7 +168,7 @@ pub fn convert_only_mbp(bcast_only_mbp: &mut BcastOnlyMBP) -> TagMarketPictureBr
     let idx = bcast_only_mbp.no_of_records as usize;
 
     let mut i = 0;
-    while i < MAX_MARKET_DEPTH_IDX {
+    while i < MAX_MBPINFO_IDX {
         if bcast_only_mbp.mbp_data[idx].mbp_info[i].qty > 0 {
             market_depth_info[mkt_depth_cnt].qty =
                 bcast_only_mbp.mbp_data[idx].mbp_info[i].qty as i64;
@@ -174,7 +176,7 @@ pub fn convert_only_mbp(bcast_only_mbp: &mut BcastOnlyMBP) -> TagMarketPictureBr
             market_depth_info[mkt_depth_cnt].number_of_orders =
                 bcast_only_mbp.mbp_data[idx].mbp_info[i].number_of_orders;
 
-            if i >= MAX_MARKET_DEPTH_IDX - 1 {
+            if i <= MAX_BUY_SELL_DEPTH_IDX - 1 {
                 buy_depth_count += 1;
             } else {
                 sell_depth_count += 1;
@@ -186,6 +188,8 @@ pub fn convert_only_mbp(bcast_only_mbp: &mut BcastOnlyMBP) -> TagMarketPictureBr
         } else {
             break;
         }
+
+        i += 1;
     }
 
     let picture = TagMarketPictureBroadcast {
@@ -239,7 +243,7 @@ pub fn convert_only_mbp_cedtc(
     let idx = bcast_only_mbp_cedtc.no_of_records as usize;
 
     let mut i = 0;
-    while i < MAX_MARKET_DEPTH_IDX {
+    while i < MAX_MBPINFO_IDX {
         if bcast_only_mbp_cedtc.mbp_data[idx].mbp_info[i].qty > 0 {
             market_depth_info[mkt_depth_cnt].qty =
                 bcast_only_mbp_cedtc.mbp_data[idx].mbp_info[i].qty as i64;
@@ -248,7 +252,7 @@ pub fn convert_only_mbp_cedtc(
             market_depth_info[mkt_depth_cnt].number_of_orders =
                 bcast_only_mbp_cedtc.mbp_data[idx].mbp_info[i].number_of_orders;
 
-            if i >= MAX_MARKET_DEPTH_IDX - 1 {
+            if i <= MAX_BUY_SELL_DEPTH_IDX - 1 {
                 buy_depth_count += 1;
             } else {
                 sell_depth_count += 1;
@@ -260,6 +264,8 @@ pub fn convert_only_mbp_cedtc(
         } else {
             break;
         }
+
+        i += 1;
     }
 
     let picture = TagMarketPictureBroadcast {

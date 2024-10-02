@@ -93,10 +93,14 @@ impl Packet {
                 // For 7208, has multiple records
                 // Seperate each token for parallel processing
                 if let WorkType::TokenWise(_) = work_type {
-                    let start = offset_of!(BcastOnlyMBP, no_of_records);
+                    let start = SKIP_BYTES + offset_of!(BcastOnlyMBP, no_of_records);
                     let end = start + size_of::<i16>();
 
-                    let no_of_records: i16 = bytes_to_struct(&packet.0[start..end]);
+                    let mut no_of_records: i16 = bytes_to_struct(&packet.0[start..end]);
+                    no_of_records = no_of_records.to_be();
+
+                    // Set no of records to 0, for original packet
+                    *bytes_to_struct_mut::<i16>(&mut packet.0[start..end]) = 0;
 
                     // If more than one record
                     // Push first record into packet by setting no of records as 0
@@ -108,14 +112,12 @@ impl Packet {
 
                         // Mutable ref to slice
                         let no_of_records = bytes_to_struct_mut::<i16>(&mut packet.0[start..end]);
-                        *no_of_records = 0;
+                        *no_of_records = 1;
+                        // Twiddle
+                        *no_of_records = no_of_records.to_be();
 
                         packets.push((packet, work_type));
                     }
-
-                    // Set no of records to 1, for original packet
-                    let no_of_records = bytes_to_struct_mut::<i16>(&mut packet.0[start..end]);
-                    *no_of_records = 1;
                 }
 
                 packets.push((packet, work_type));
