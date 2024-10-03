@@ -41,8 +41,8 @@ impl ThreadPoolMaster {
     }
 }
 
-pub fn work_on_map(data: Work) {
-    let value = TOKEN_WISE_MAP.get(&data.work_type.get_id()).unwrap();
+pub fn work_on_map(work: Work) {
+    let value = TOKEN_WISE_MAP.get(&work.work_type.get_id()).unwrap();
 
     let packet_ptr = value.swap(ptr::null_mut(), Ordering::SeqCst);
     unsafe {
@@ -51,20 +51,20 @@ pub fn work_on_map(data: Work) {
         let mut packet = Box::from_raw(packet_ptr);
 
         // Call associated function
-        (data.processing_fn)(&mut *packet);
+        (work.processing_fn)(&mut *packet);
 
         OUTPUT.write(&packet);
     }
 }
 
-pub fn work_on_queue(data: Work) {
-    let work_queue = &WORK_QUEUES[data.work_type.get_id()];
-    let work_lock = &WORK_LOCKS[data.work_type.get_id()];
+pub fn work_on_queue(work: Work) {
+    let work_queue = &WORK_QUEUES[work.work_type.get_id()];
+    let work_lock = &WORK_LOCKS[work.work_type.get_id()];
 
     while let Some(mut packet) = work_queue.pop() {
         // println!("Data received in work_on_queue: {:?}", packet);
 
-        (data.processing_fn)(&mut packet);
+        (work.processing_fn)(&mut packet);
 
         OUTPUT.write(&packet);
 
@@ -74,7 +74,7 @@ pub fn work_on_queue(data: Work) {
                 continue;
             } else {
                 // If some work in tpool, push current work to tpool and exit
-                TPOOL_QUEUE.push(data);
+                TPOOL_QUEUE.push(work);
                 return;
             }
         }
@@ -90,6 +90,6 @@ pub fn work_on_queue(data: Work) {
             .is_ok()
     {
         // push to tpool
-        TPOOL_QUEUE.push(data);
+        TPOOL_QUEUE.push(work);
     }
 }
