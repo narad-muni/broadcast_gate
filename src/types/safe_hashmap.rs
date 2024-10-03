@@ -26,7 +26,7 @@ where
     }
 
     pub fn insert(&self, key: K, value: V) -> Option<V> {
-        assert!(self.map.get().is_some());
+        debug_assert!(self.map.get().is_some());
 
         let map = self.map.get().unwrap();
 
@@ -34,7 +34,7 @@ where
     }
 
     pub fn get(&self, key: &K) -> Option<&V> {
-        assert!(self.map.get().is_some());
+        debug_assert!(self.map.get().is_some());
 
         let map = self.map.get().unwrap();
 

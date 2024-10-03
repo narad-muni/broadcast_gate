@@ -58,7 +58,7 @@ impl<'a> UdpInput<'a> {
             let mut buf = Packet([0; BUF_SIZE]);
 
             // Value can never be none
-            assert!(self.current.is_some());
+            debug_assert!(self.current.is_some());
 
             // If error, then proceed to switch
             if let Err(_) = self.current.unwrap().read(&mut buf.0) {

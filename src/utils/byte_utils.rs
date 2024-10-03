@@ -15,7 +15,7 @@ pub fn struct_to_bytes<T>(s: &T, buffer: &mut [u8]) {
     // Copy lowest size
     // This is to prevent overflow
     let mut min_size = mem::size_of::<T>();
-    
+
     if min_size > buffer.len() {
         min_size = buffer.len();
     }
@@ -38,7 +38,7 @@ pub fn bytes_to_partial_struct<T>(s: &mut T, buffer: &[u8]) {
         // Copy lowest size
         // This is to prevent overflow
         let mut min_size = mem::size_of::<T>();
-        
+
         if min_size > buffer.len() {
             min_size = buffer.len();
         }
