@@ -3,7 +3,7 @@ use std::io::Read;
 use socket2::Socket;
 
 use crate::{
-    constants::BUF_SIZE, global::INPUT_QUEUE, settings, types::packet::Packet,
+    constants::{BUF_SIZE, UNRECOVERABLE_ERROR_KINDS}, global::INPUT_QUEUE, settings, types::packet::Packet,
     utils::udp_utils::build_socket,
 };
 
@@ -61,7 +61,12 @@ impl<'a> UdpInput<'a> {
             debug_assert!(self.current.is_some());
 
             // If error, then proceed to switch
-            if let Err(_) = self.current.unwrap().read(&mut buf.0) {
+            if let Err(e) = self.current.unwrap().read(&mut buf.0) {
+                // Check for client side errors
+                if UNRECOVERABLE_ERROR_KINDS.contains(&e.kind()) {
+                    panic!("Unrecoverable io error in udp input: {}", e);
+                }
+
                 // If autoswitch is false, then don't rotate
                 if !self.auto_switch {
                     continue;

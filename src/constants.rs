@@ -1,3 +1,5 @@
+use std::io::ErrorKind;
+
 pub const BUF_SIZE: usize = 1024;
 pub const SKIP_BYTES: usize = 8;
 
@@ -77,7 +79,17 @@ pub const COMPLEX_MBP_UNCOMPRESSED_DATA_LEN: usize = 60;
 pub const DEBT_MBP_UNCOMPRESSED_DATA_LEN: usize = 68;
 
 // Custom types
-
 pub const MAX_MARKET_DEPTH_IDX: usize = 200; // Define this constant as per your requirement
 pub const TIMESTAMP_LEN: usize = 8; // Define this constant as per your requirement
 pub const MAX_BUY_SELL_DEPTH_IDX: usize = 5;
+
+// Error kinds
+pub const UNRECOVERABLE_ERROR_KINDS: [ErrorKind; 7] = [
+    ErrorKind::NotFound,
+    ErrorKind::PermissionDenied,
+    ErrorKind::AddrInUse,
+    ErrorKind::AddrNotAvailable,
+    ErrorKind::BrokenPipe,
+    ErrorKind::Unsupported,
+    ErrorKind::OutOfMemory,
+];
