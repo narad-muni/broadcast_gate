@@ -73,11 +73,10 @@ impl Packet {
 
                 let mut packet = Packet(decompressed_packet);
 
-                let mut bcast_header: BcastHeaders = bytes_to_struct(&packet.0[SKIP_BYTES..]);
-                bcast_header.twiddle();
+                let trans_code = BcastHeaders::get_trans_code(&packet.0);
 
                 // Fetch worktype for compressed packet
-                let work_type = if bcast_header.trans_code == BCAST_ONLY_MBP {
+                let work_type = if trans_code == BCAST_ONLY_MBP {
                     let token_start = NSE_HEADER_SIZE + SKIP_BYTES + size_of::<i16>();
                     let token_end = token_start + size_of::<i32>();
 
@@ -87,7 +86,7 @@ impl Packet {
                     WorkType::TokenWise(token)
                 } else {
                     // get segment id
-                    let segment = bcast_header.filler2[0];
+                    let segment = BcastHeaders::get_segment(&packet.0);
 
                     WorkType::SegmentWise(segment)
                 };

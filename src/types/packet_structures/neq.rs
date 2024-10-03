@@ -205,6 +205,14 @@ impl BcastHeaders {
 
         trans_code
     }
+
+    pub fn get_segment(buf: &[u8]) -> u8 {
+        let offset = SKIP_BYTES + offset_of!(BcastHeaders, filler2);
+    
+        let segment = buf[offset];
+
+        segment
+    }
 }
 
 #[derive(Debug, Twiddle, Clone, Copy)]
