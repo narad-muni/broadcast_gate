@@ -12,9 +12,17 @@ pub fn struct_to_bytes<T>(s: &T, buffer: &mut [u8]) {
     // Get a raw pointer to the struct and cast it to a byte pointer
     let struct_ptr: *const u8 = &s as *const _ as *const u8;
 
+    // Copy lowest size
+    // This is to prevent overflow
+    let mut min_size = mem::size_of::<T>();
+    
+    if min_size > buffer.len() {
+        min_size = buffer.len();
+    }
+
     // Use unsafe to copy the struct memory into the byte array
     unsafe {
-        ptr::copy_nonoverlapping(struct_ptr, buffer.as_mut_ptr(), mem::size_of::<T>());
+        ptr::copy_nonoverlapping(struct_ptr, buffer.as_mut_ptr(), min_size);
     }
 }
 
@@ -27,8 +35,16 @@ pub fn bytes_to_partial_struct<T>(s: &mut T, buffer: &[u8]) {
         // Get unsafe mutable raw pointer
         let struct_ptr = s as *mut T as *mut u8;
 
+        // Copy lowest size
+        // This is to prevent overflow
+        let mut min_size = mem::size_of::<T>();
+        
+        if min_size > buffer.len() {
+            min_size = buffer.len();
+        }
+
         // Similar to memcpy
-        ptr::copy_nonoverlapping(buffer.as_ptr(), struct_ptr, buffer.len());
+        ptr::copy_nonoverlapping(buffer.as_ptr(), struct_ptr, min_size);
     };
 }
 
