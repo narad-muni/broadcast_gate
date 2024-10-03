@@ -1,7 +1,6 @@
 use std::thread;
 
 use distributor::Distributor;
-use global::TOKEN_WISE_MAP;
 use input::UdpInput;
 use threadpool::ThreadPoolMaster;
 
@@ -15,10 +14,10 @@ mod threadpool;
 mod types;
 mod utils;
 mod workers;
+mod macros;
 
 fn main() {
     settings::init();
-    TOKEN_WISE_MAP.init();
 
     let distributor = Distributor::new();
     let tpool_master = ThreadPoolMaster::new(settings::get().thread_count);
