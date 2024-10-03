@@ -1,3 +1,5 @@
+use std::mem::offset_of;
+
 use crate::{
     constants::*,
     utils::byte_utils::{bytes_to_struct, struct_to_bytes},
@@ -192,6 +194,17 @@ pub struct BcastHeaders {
     pub time_stamp2: [u8; 8],
     pub filler2: [u8; 8],
     pub message_length: i16,
+}
+
+impl BcastHeaders {
+    pub fn get_trans_code(buf: &[u8]) -> i16 {
+        let start = SKIP_BYTES + offset_of!(BcastHeaders, trans_code);
+        let end = start + size_of::<i16>();
+
+        let trans_code = i16::from_be_bytes(buf[start..end].try_into().unwrap());
+
+        trans_code
+    }
 }
 
 #[derive(Debug, Twiddle, Clone, Copy)]
