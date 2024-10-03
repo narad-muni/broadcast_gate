@@ -64,6 +64,7 @@ pub const MAX_QUEUE_BLOCK_SIZE: usize = 4096;
 pub const MAX_SOCK_RECV_BUFFER_SIZE: usize = 1048576;
 pub const BCAST_ONLY_MBP: i16 = 7208;
 pub const BCAST_MBO_MBP_UPDATE: i16 = 7200;
+pub const MAX_SUB_PACKETS: usize = 12;
 
 // For BSE
 pub const U16_MAX: i16 = 32767;

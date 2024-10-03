@@ -3,9 +3,9 @@ use std::mem::offset_of;
 use rdkafka::message::ToBytes;
 
 use crate::{
-    constants::{BCAST_ONLY_MBP, BUF_SIZE, SKIP_BYTES},
+    constants::{BCAST_ONLY_MBP, BUF_SIZE, MAX_SUB_PACKETS, SKIP_BYTES},
     global::NSE_HEADER_SIZE,
-    utils::byte_utils::{bytes_to_struct, bytes_to_struct_mut},
+    utils::byte_utils::{bytes_to_struct, bytes_to_struct_mut, create_empty},
 };
 
 use super::{
@@ -24,8 +24,9 @@ impl ToBytes for Packet {
 }
 
 impl Packet {
-    pub fn get_nse_packets(&self) -> Vec<(Packet, WorkType)> {
-        let mut packets = vec![];
+    pub fn get_nse_packets(&self) -> ([(Packet, WorkType); MAX_SUB_PACKETS], usize) {
+        let mut packets: [(Packet, WorkType); MAX_SUB_PACKETS] = create_empty();
+        let mut packet_idx = 0;
 
         let mut packet: PackData = bytes_to_struct(&self.0);
         packet.twiddle();
@@ -56,7 +57,8 @@ impl Packet {
 
                 let work_type = WorkType::NseUncompressed;
 
-                packets.push((packet, work_type));
+                packets[packet_idx] = (packet, work_type);
+                packet_idx += 1;
             } else {
                 // Packet is compressed
 
@@ -116,14 +118,16 @@ impl Packet {
                         // Twiddle
                         *no_of_records = no_of_records.to_be();
 
-                        packets.push((packet, work_type));
+                        packets[packet_idx] = (packet, work_type);
+                        packet_idx += 1;
                     }
                 }
 
-                packets.push((packet, work_type));
+                packets[packet_idx] = (packet, work_type);
+                packet_idx += 1;
             }
         }
 
-        packets
+        (packets, packet_idx + 1)
     }
 }

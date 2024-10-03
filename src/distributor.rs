@@ -44,9 +44,11 @@ impl Distributor {
 
     pub fn process_neq_packet(packet: Packet) {
         // If nse, extract packets received in single packet
-        let packets = packet.get_nse_packets();
+        let (packets, no_of_packets) = packet.get_nse_packets();
 
-        for (packet, work_type) in packets {
+        for i in 0..no_of_packets {
+
+            let (packet, work_type) = packets[i];
             // Create work
             let processing_fn = get_neq_processing_fn(&work_type);
             let work = Work {
@@ -64,9 +66,11 @@ impl Distributor {
 
     pub fn process_nfo_packet(packet: Packet) {
         // If nse, extract packets received in single packet
-        let packets = packet.get_nse_packets();
+        let (packets, no_of_packets) = packet.get_nse_packets();
 
-        for (packet, work_type) in packets {
+        for i in 0..no_of_packets {
+
+            let (packet, work_type) = packets[i];
             // Create work
             let processing_fn = get_nfo_processing_fn(&work_type);
             let work = Work {
@@ -84,9 +88,11 @@ impl Distributor {
 
     pub fn process_ncd_packet(packet: Packet) {
         // If nse, extract packets received in single packet
-        let packets = packet.get_nse_packets();
+        let (packets, no_of_packets) = packet.get_nse_packets();
 
-        for (packet, work_type) in packets {
+        for i in 0..no_of_packets {
+
+            let (packet, work_type) = packets[i];
             // Create work
             let processing_fn = get_ncd_processing_fn(&work_type);
             let work = Work {
