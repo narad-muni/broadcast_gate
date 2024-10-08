@@ -42,31 +42,31 @@ pub enum NeqBroadcastTransactionMapping {
     BcastSecurityMstrChg(BcastSecurityMasterUpdateInfo),
 }
 
-pub fn build_neq_struct(transaction_id: i16, buf: &[u8]) -> NeqBroadcastTransactionMapping {
+pub fn build_neq_struct(transaction_id: i16, buf: &[u8]) -> Option<NeqBroadcastTransactionMapping> {
     match transaction_id {
-        5294 => NeqBroadcastTransactionMapping::BcastContMsg(bytes_to_struct(buf)),
-        6501 => NeqBroadcastTransactionMapping::BcastJrnlVctMsg(bytes_to_struct(buf)),
-        6511 => NeqBroadcastTransactionMapping::BcastOpenMessage(bytes_to_struct(buf)),
-        6521 => NeqBroadcastTransactionMapping::BcastCloseMessage(bytes_to_struct(buf)),
-        6531 => NeqBroadcastTransactionMapping::BcastPreopenShutdownMsg(bytes_to_struct(buf)),
-        6571 => NeqBroadcastTransactionMapping::BcastNormalMktPreopenEnded(bytes_to_struct(buf)),
-        6581 => NeqBroadcastTransactionMapping::BcastAuctionStatusChange(bytes_to_struct(buf)),
-        7200 => NeqBroadcastTransactionMapping::BcastMboMbpCedtc(bytes_to_struct(buf)),
-        7201 => NeqBroadcastTransactionMapping::BcastMwRoundRobinCedtc(bytes_to_struct(buf)),
-        7206 => NeqBroadcastTransactionMapping::BcastSystemInformationOut(bytes_to_struct(buf)),
-        7207 => NeqBroadcastTransactionMapping::BcastIndices(bytes_to_struct(buf)),
-        7208 => NeqBroadcastTransactionMapping::BcastOnlyMbpCedtc(bytes_to_struct(buf)),
-        7210 => NeqBroadcastTransactionMapping::BcastCallAuctionOrdCxlUpdate(bytes_to_struct(buf)),
-        7214 => NeqBroadcastTransactionMapping::BcastCallAuctionMbpCedtc(bytes_to_struct(buf)),
-        7215 => NeqBroadcastTransactionMapping::BcastCaMwCedtc(bytes_to_struct(buf)),
-        7216 => NeqBroadcastTransactionMapping::BcastIndicesVix(bytes_to_struct(buf)),
-        7306 => NeqBroadcastTransactionMapping::BcastPartMstrChg(bytes_to_struct(buf)),
-        7764 => NeqBroadcastTransactionMapping::BcastSymbolStatusChangeAction(bytes_to_struct(buf)),
-        8207 => NeqBroadcastTransactionMapping::BcastIndicativeIndices(bytes_to_struct(buf)),
-        9010 => NeqBroadcastTransactionMapping::BcastTurnoverExceeded(bytes_to_struct(buf)),
-        9011 => NeqBroadcastTransactionMapping::BcastBrokerReactivated(bytes_to_struct(buf)),
-        18130 => NeqBroadcastTransactionMapping::BcastSecurityStatusChg(bytes_to_struct(buf)),
-        18201 => {
+        5294 => Some(NeqBroadcastTransactionMapping::BcastContMsg(bytes_to_struct(buf))),
+        6501 => Some(NeqBroadcastTransactionMapping::BcastJrnlVctMsg(bytes_to_struct(buf))),
+        6511 => Some(NeqBroadcastTransactionMapping::BcastOpenMessage(bytes_to_struct(buf))),
+        6521 => Some(NeqBroadcastTransactionMapping::BcastCloseMessage(bytes_to_struct(buf))),
+        6531 => Some(NeqBroadcastTransactionMapping::BcastPreopenShutdownMsg(bytes_to_struct(buf))),
+        6571 => Some(NeqBroadcastTransactionMapping::BcastNormalMktPreopenEnded(bytes_to_struct(buf))),
+        6581 => Some(NeqBroadcastTransactionMapping::BcastAuctionStatusChange(bytes_to_struct(buf))),
+        7200 => Some(NeqBroadcastTransactionMapping::BcastMboMbpCedtc(bytes_to_struct(buf))),
+        7201 => Some(NeqBroadcastTransactionMapping::BcastMwRoundRobinCedtc(bytes_to_struct(buf))),
+        7206 => Some(NeqBroadcastTransactionMapping::BcastSystemInformationOut(bytes_to_struct(buf))),
+        7207 => Some(NeqBroadcastTransactionMapping::BcastIndices(bytes_to_struct(buf))),
+        7208 => Some(NeqBroadcastTransactionMapping::BcastOnlyMbpCedtc(bytes_to_struct(buf))),
+        7210 => Some(NeqBroadcastTransactionMapping::BcastCallAuctionOrdCxlUpdate(bytes_to_struct(buf))),
+        7214 => Some(NeqBroadcastTransactionMapping::BcastCallAuctionMbpCedtc(bytes_to_struct(buf))),
+        7215 => Some(NeqBroadcastTransactionMapping::BcastCaMwCedtc(bytes_to_struct(buf))),
+        7216 => Some(NeqBroadcastTransactionMapping::BcastIndicesVix(bytes_to_struct(buf))),
+        7306 => Some(NeqBroadcastTransactionMapping::BcastPartMstrChg(bytes_to_struct(buf))),
+        7764 => Some(NeqBroadcastTransactionMapping::BcastSymbolStatusChangeAction(bytes_to_struct(buf))),
+        8207 => Some(NeqBroadcastTransactionMapping::BcastIndicativeIndices(bytes_to_struct(buf))),
+        9010 => Some(NeqBroadcastTransactionMapping::BcastTurnoverExceeded(bytes_to_struct(buf))),
+        9011 => Some(NeqBroadcastTransactionMapping::BcastBrokerReactivated(bytes_to_struct(buf))),
+        18130 => Some(NeqBroadcastTransactionMapping::BcastSecurityStatusChg(bytes_to_struct(buf))),
+        18201 => Some({
             if buf[40] == b'H' {
                 NeqBroadcastTransactionMapping::BcastMarketStatsReportDataCedtcH(bytes_to_struct(
                     buf,
@@ -76,16 +76,16 @@ pub fn build_neq_struct(transaction_id: i16, buf: &[u8]) -> NeqBroadcastTransact
                     buf,
                 ))
             }
-        }
-        18700 => NeqBroadcastTransactionMapping::BcastAuctionInquiryOut(bytes_to_struct(buf)),
-        18703 => NeqBroadcastTransactionMapping::BcastTickerAndMktIndex(bytes_to_struct(buf)),
-        18705 => NeqBroadcastTransactionMapping::BcastOnlyMbp(bytes_to_struct(buf)),
-        18707 => {
+        }),
+        18700 => Some(NeqBroadcastTransactionMapping::BcastAuctionInquiryOut(bytes_to_struct(buf))),
+        18703 => Some(NeqBroadcastTransactionMapping::BcastTickerAndMktIndex(bytes_to_struct(buf))),
+        18705 => Some(NeqBroadcastTransactionMapping::BcastOnlyMbp(bytes_to_struct(buf))),
+        18707 => Some({
             NeqBroadcastTransactionMapping::BcastSecurityStatusChgPreopen(bytes_to_struct(buf))
-        }
-        18708 => NeqBroadcastTransactionMapping::BcastBuyBack(bytes_to_struct(buf)),
-        18720 => NeqBroadcastTransactionMapping::BcastSecurityMstrChg(bytes_to_struct(buf)),
-        _ => panic!("Invalid eq transaction id: {}", transaction_id),
+        }),
+        18708 => Some(NeqBroadcastTransactionMapping::BcastBuyBack(bytes_to_struct(buf))),
+        18720 => Some(NeqBroadcastTransactionMapping::BcastSecurityMstrChg(bytes_to_struct(buf))),
+        _ => {println!("Invalid eq transaction id: {}", transaction_id); None},
     }
 }
 

@@ -1,3 +1,5 @@
+use std::time::{SystemTime, UNIX_EPOCH};
+
 use crate::{
     constants::{MAX_BUY_SELL_DEPTH_IDX, MAX_MBPINFO_IDX, SKIP_BYTES},
     types::{
@@ -19,56 +21,59 @@ use crate::{
 pub fn cast_and_twiddle_nfo(packet: &mut Packet) {
     let trans_code = BcastHeaders::get_trans_code(&packet.0);
 
-    let mut nfo_struct = build_nfo_struct(trans_code, &packet.0[SKIP_BYTES..]);
-    nfo_struct.twiddle();
+    if let Some(mut nfo_struct) = build_nfo_struct(trans_code, &packet.0[SKIP_BYTES..]) {
+        nfo_struct.twiddle();
 
-    // Convert struct to custom struct for 7208 and 7200
-    if let NfoBroadcastTransactionMapping::BcastMboMbpUpdate(s) = &mut nfo_struct {
-        let st = convert_mbo_mbp(s);
-        struct_to_bytes(&st, &mut packet.0);
-    } else if let NfoBroadcastTransactionMapping::BcastOnlyMbp(s) = &mut nfo_struct {
-        let st = convert_only_mbp(s);
-        struct_to_bytes(&st, &mut packet.0);
-    } else {
-        nfo_struct.to_bytes(&mut packet.0);
-    }
+        // Convert struct to custom struct for 7208 and 7200
+        if let NfoBroadcastTransactionMapping::BcastMboMbpUpdate(s) = &mut nfo_struct {
+            let st = convert_mbo_mbp(s);
+            struct_to_bytes(&st, &mut packet.0);
+        } else if let NfoBroadcastTransactionMapping::BcastOnlyMbp(s) = &mut nfo_struct {
+            let st = convert_only_mbp(s);
+            struct_to_bytes(&st, &mut packet.0);
+        } else {
+            nfo_struct.to_bytes(&mut packet.0);
+        }
+    };
 }
 
 pub fn cast_and_twiddle_neq(packet: &mut Packet) {
     let trans_code = BcastHeaders::get_trans_code(&packet.0);
 
-    let mut neq_struct = build_neq_struct(trans_code, &packet.0[SKIP_BYTES..]);
-    neq_struct.twiddle();
+    if let Some(mut neq_struct) = build_neq_struct(trans_code, &packet.0[SKIP_BYTES..]) {
+        neq_struct.twiddle();
 
-    // Convert struct to custom struct for 7208 and 7200
-    if let NeqBroadcastTransactionMapping::BcastMboMbpCedtc(s) = &mut neq_struct {
-        let st = convert_mbo_mbp(s);
-        struct_to_bytes(&st, &mut packet.0);
-    } else if let NeqBroadcastTransactionMapping::BcastOnlyMbpCedtc(s) = &mut neq_struct {
-        let st = convert_only_mbp_cedtc(s);
-        struct_to_bytes(&st, &mut packet.0);
-    } else {
-        neq_struct.to_bytes(&mut packet.0);
+        // Convert struct to custom struct for 7208 and 7200
+        if let NeqBroadcastTransactionMapping::BcastMboMbpCedtc(s) = &mut neq_struct {
+            let st = convert_mbo_mbp(s);
+            struct_to_bytes(&st, &mut packet.0);
+        } else if let NeqBroadcastTransactionMapping::BcastOnlyMbpCedtc(s) = &mut neq_struct {
+            let st = convert_only_mbp_cedtc(s);
+            struct_to_bytes(&st, &mut packet.0);
+        } else {
+            neq_struct.to_bytes(&mut packet.0);
+        };
     }
 }
 
 pub fn cast_and_twiddle_ncd(packet: &mut Packet) {
     let trans_code = BcastHeaders::get_trans_code(&packet.0);
 
-    let mut ncd_struct = build_ncd_struct(trans_code, &packet.0[SKIP_BYTES..]);
-    ncd_struct.twiddle();
+    if let Some(mut ncd_struct) = build_ncd_struct(trans_code, &packet.0[SKIP_BYTES..]) {
+        ncd_struct.twiddle();
 
-    // Convert struct to custom struct for 7208 and 7200
-    if let NcdBroadcastTransactionMapping::BcastMboMbpUpdate(s) = &mut ncd_struct {
-        let st = convert_mbo_mbp(s);
+        // Convert struct to custom struct for 7208 and 7200
+        if let NcdBroadcastTransactionMapping::BcastMboMbpUpdate(s) = &mut ncd_struct {
+            let st = convert_mbo_mbp(s);
 
-        struct_to_bytes(&st, &mut packet.0);
-    } else if let NcdBroadcastTransactionMapping::BcastOnlyMbp(s) = &mut ncd_struct {
-        let st = convert_only_mbp(s);
+            struct_to_bytes(&st, &mut packet.0);
+        } else if let NcdBroadcastTransactionMapping::BcastOnlyMbp(s) = &mut ncd_struct {
+            let st = convert_only_mbp(s);
 
-        struct_to_bytes(&st, &mut packet.0);
-    } else {
-        ncd_struct.to_bytes(&mut packet.0);
+            struct_to_bytes(&st, &mut packet.0);
+        } else {
+            ncd_struct.to_bytes(&mut packet.0);
+        };
     }
 }
 
@@ -80,7 +85,7 @@ pub fn convert_mbo_mbp(bcast_mbo_mbp: &mut BcastMBOMBP) -> TagMarketPictureBroad
         alpha_char: bcast_mbo_mbp.bcast_header.alpha_char,
         trader_id: 0,
         error_code: bcast_mbo_mbp.bcast_header.error_code,
-        timestamp: 0,
+        timestamp: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_micros(),
         timestamp1: bcast_mbo_mbp.bcast_header.time_stamp2,
         timestamp2: bcast_mbo_mbp.bcast_header.time_stamp2,
         message_length: bcast_mbo_mbp.bcast_header.message_length,
@@ -149,7 +154,7 @@ pub fn convert_only_mbp(bcast_only_mbp: &mut BcastOnlyMBP) -> TagMarketPictureBr
         alpha_char: bcast_only_mbp.bcast_header.alpha_char,
         trader_id: 0,
         error_code: bcast_only_mbp.bcast_header.error_code,
-        timestamp: 0,
+        timestamp: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_micros(),
         timestamp1: bcast_only_mbp.bcast_header.time_stamp2,
         timestamp2: bcast_only_mbp.bcast_header.time_stamp2,
         message_length: bcast_only_mbp.bcast_header.message_length,
@@ -224,7 +229,7 @@ pub fn convert_only_mbp_cedtc(
         alpha_char: bcast_only_mbp_cedtc.bcast_header.alpha_char,
         trader_id: 0,
         error_code: bcast_only_mbp_cedtc.bcast_header.error_code,
-        timestamp: 0,
+        timestamp: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_micros(),
         timestamp1: bcast_only_mbp_cedtc.bcast_header.time_stamp2,
         timestamp2: bcast_only_mbp_cedtc.bcast_header.time_stamp2,
         message_length: bcast_only_mbp_cedtc.bcast_header.message_length,
