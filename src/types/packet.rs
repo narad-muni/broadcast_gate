@@ -127,6 +127,6 @@ impl Packet {
             }
         }
 
-        (packets, packet_idx + 1)
+        (packets, packet_idx)
     }
 }
