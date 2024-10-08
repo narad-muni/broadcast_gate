@@ -3,7 +3,7 @@ use std::mem::offset_of;
 use rdkafka::message::ToBytes;
 
 use crate::{
-    constants::{BCAST_ONLY_MBP, BUF_SIZE, MAX_SUB_PACKETS, SKIP_BYTES},
+    constants::{BCAST_ONLY_MBP, BCAST_ONLY_MBP_EQ, BUF_SIZE, MAX_SUB_PACKETS, SKIP_BYTES},
     global::NSE_HEADER_SIZE,
     utils::byte_utils::{bytes_to_struct, bytes_to_struct_mut, create_empty},
 };
@@ -76,7 +76,7 @@ impl Packet {
                 let trans_code = BcastHeaders::get_trans_code(&packet.0);
 
                 // Fetch worktype for compressed packet
-                let work_type = if trans_code == BCAST_ONLY_MBP {
+                let work_type = if trans_code == BCAST_ONLY_MBP || trans_code == BCAST_ONLY_MBP_EQ {
                     let token_start = NSE_HEADER_SIZE + SKIP_BYTES + size_of::<i16>();
                     let token_end = token_start + size_of::<i32>();
 
