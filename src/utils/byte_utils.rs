@@ -9,20 +9,17 @@ pub fn bytes_to_struct<T>(s: &[u8]) -> T {
 }
 
 pub fn struct_to_bytes<T>(s: &T, buffer: &mut [u8]) {
-    // Get a raw pointer to the struct and cast it to a byte pointer
-    let struct_ptr: *const u8 = &s as *const _ as *const u8;
+    unsafe{
+        let size = std::mem::size_of::<T>();
 
-    // Copy lowest size
-    // This is to prevent overflow
-    let mut min_size = mem::size_of::<T>();
+        // Ensure the buffer is large enough
+        assert!(buffer.len() >= size, "Buffer is not large enough");
 
-    if min_size > buffer.len() {
-        min_size = buffer.len();
-    }
+        // Get a pointer to the value
+        let ptr = s as *const T as *const u8;
 
-    // Use unsafe to copy the struct memory into the byte array
-    unsafe {
-        ptr::copy_nonoverlapping(struct_ptr, buffer.as_mut_ptr(), min_size);
+        // Copy the bytes into the buffer
+        std::ptr::copy_nonoverlapping(ptr, buffer.as_mut_ptr(), size);
     }
 }
 
