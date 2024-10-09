@@ -55,7 +55,7 @@ impl Output {
     pub fn write(&self, packet: &Packet) {
         unsafe {
             // Acquire lock
-            while self.lock.swap(true, Ordering::Relaxed) == false {}
+            while self.lock.swap(true, Ordering::Relaxed) == true {}
 
             if self.output_targets.contains(OutputTargets::UDP) {
                 (*self.udp.get()).write(packet);
