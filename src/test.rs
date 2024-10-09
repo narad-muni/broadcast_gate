@@ -20,5 +20,9 @@ fn main() {
 
     x = bytes_to_struct(&buf);
 
+    let z = u64::from_le_bytes([16,0,252,175,127,0,0,0]);
+
+    println!("{}", z);
+
     println!("{x:?}");
 }

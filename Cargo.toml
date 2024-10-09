@@ -20,3 +20,6 @@ socket2 = "0.5.7"
 threadpool = "1.8.1"
 twiddler = {git="https://github.com/narad-muni/twiddle_rs"}
 mylzo = {git="https://github.com/narad-muni/mylzo"}
+
+[profile.release]
+strip = true

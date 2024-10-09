@@ -44,48 +44,36 @@ pub enum NeqBroadcastTransactionMapping {
 
 pub fn build_neq_struct(transaction_id: i16, buf: &[u8]) -> Option<NeqBroadcastTransactionMapping> {
     match transaction_id {
-        5294 => Some(NeqBroadcastTransactionMapping::BcastContMsg(bytes_to_struct(buf))),
-        6501 => Some(NeqBroadcastTransactionMapping::BcastJrnlVctMsg(bytes_to_struct(buf))),
-        6511 => Some(NeqBroadcastTransactionMapping::BcastOpenMessage(bytes_to_struct(buf))),
-        6521 => Some(NeqBroadcastTransactionMapping::BcastCloseMessage(bytes_to_struct(buf))),
-        6531 => Some(NeqBroadcastTransactionMapping::BcastPreopenShutdownMsg(bytes_to_struct(buf))),
-        6571 => Some(NeqBroadcastTransactionMapping::BcastNormalMktPreopenEnded(bytes_to_struct(buf))),
-        6581 => Some(NeqBroadcastTransactionMapping::BcastAuctionStatusChange(bytes_to_struct(buf))),
-        7200 => Some(NeqBroadcastTransactionMapping::BcastMboMbpCedtc(bytes_to_struct(buf))),
-        7201 => Some(NeqBroadcastTransactionMapping::BcastMwRoundRobinCedtc(bytes_to_struct(buf))),
-        7206 => Some(NeqBroadcastTransactionMapping::BcastSystemInformationOut(bytes_to_struct(buf))),
-        7207 => Some(NeqBroadcastTransactionMapping::BcastIndices(bytes_to_struct(buf))),
+        5294 => None,
+        6501 => None,
+        6511 => None,
+        6521 => None,
+        6531 => None,
+        6571 => None,
+        6581 => None,
+        7200 => None,
+        7201 => None,
+        7206 => None,
+        7207 => None,
         7208 => Some(NeqBroadcastTransactionMapping::BcastOnlyMbpCedtc(bytes_to_struct(buf))),
-        7210 => Some(NeqBroadcastTransactionMapping::BcastCallAuctionOrdCxlUpdate(bytes_to_struct(buf))),
-        7214 => Some(NeqBroadcastTransactionMapping::BcastCallAuctionMbpCedtc(bytes_to_struct(buf))),
-        7215 => Some(NeqBroadcastTransactionMapping::BcastCaMwCedtc(bytes_to_struct(buf))),
-        7216 => Some(NeqBroadcastTransactionMapping::BcastIndicesVix(bytes_to_struct(buf))),
-        7306 => Some(NeqBroadcastTransactionMapping::BcastPartMstrChg(bytes_to_struct(buf))),
-        7764 => Some(NeqBroadcastTransactionMapping::BcastSymbolStatusChangeAction(bytes_to_struct(buf))),
-        8207 => Some(NeqBroadcastTransactionMapping::BcastIndicativeIndices(bytes_to_struct(buf))),
-        9010 => Some(NeqBroadcastTransactionMapping::BcastTurnoverExceeded(bytes_to_struct(buf))),
-        9011 => Some(NeqBroadcastTransactionMapping::BcastBrokerReactivated(bytes_to_struct(buf))),
-        18130 => Some(NeqBroadcastTransactionMapping::BcastSecurityStatusChg(bytes_to_struct(buf))),
-        18201 => Some({
-            if buf[40] == b'H' {
-                NeqBroadcastTransactionMapping::BcastMarketStatsReportDataCedtcH(bytes_to_struct(
-                    buf,
-                ))
-            } else {
-                NeqBroadcastTransactionMapping::BcastMarketStatsReportDataCedtcR(bytes_to_struct(
-                    buf,
-                ))
-            }
-        }),
-        18700 => Some(NeqBroadcastTransactionMapping::BcastAuctionInquiryOut(bytes_to_struct(buf))),
-        18703 => Some(NeqBroadcastTransactionMapping::BcastTickerAndMktIndex(bytes_to_struct(buf))),
+        7210 => None,
+        7214 => None,
+        7215 => None,
+        7216 => None,
+        7306 => None,
+        7764 => None,
+        8207 => None,
+        9010 => None,
+        9011 => None,
+        18130 => None,
+        18201 => None,
+        18700 => None,
+        18703 => None,
         18705 => Some(NeqBroadcastTransactionMapping::BcastOnlyMbp(bytes_to_struct(buf))),
-        18707 => Some({
-            NeqBroadcastTransactionMapping::BcastSecurityStatusChgPreopen(bytes_to_struct(buf))
-        }),
-        18708 => Some(NeqBroadcastTransactionMapping::BcastBuyBack(bytes_to_struct(buf))),
-        18720 => Some(NeqBroadcastTransactionMapping::BcastSecurityMstrChg(bytes_to_struct(buf))),
-        _ => {println!("Invalid eq transaction id: {}", transaction_id); None},
+        18707 => None,
+        18708 => None,
+        18720 => None,
+        _ => {None},
     }
 }
 
@@ -473,10 +461,10 @@ pub struct BcastMBOInfo {
 #[derive(Debug, Twiddle, Clone, Copy)]
 #[repr(C, packed(2))]
 pub struct BcastMBPInfo {
-    qty: u32,
-    price: i32,
-    number_of_orders: i16,
-    bb_buy_sell_flag: i16,
+    pub qty: u32,
+    pub price: i32,
+    pub number_of_orders: i16,
+    pub bb_buy_sell_flag: i16,
 }
 
 #[derive(Debug, Twiddle, Clone, Copy)]
@@ -526,34 +514,34 @@ pub struct BcastMBPIndicator {
 #[derive(Debug, Twiddle, Clone, Copy)]
 #[repr(C, packed(2))]
 pub struct BcastInteractiveMBPData {
-    token: i32,
-    book_type: i16,
-    trading_status: i16,
-    volume_traded_today: u32,
-    last_traded_price: i32,
-    net_change_indicator: u8,
-    filler: u8,
-    net_price_change_from_closing_price: i32,
-    last_trade_quantity: i32,
-    last_trade_time: i32,
-    average_trade_price: i32,
-    auction_number: i16,
-    auction_status: i16,
-    initiator_type: i16,
-    initiator_price: i32,
-    initiator_quantity: i32,
-    auction_price: i32,
-    auction_quantity: i32,
-    mbp_info: [BcastMBPInfo; MAX_MBPINFO_IDX],
-    bb_total_buy_flag: i16,
-    bb_total_sell_flag: i16,
-    lf_total_buy_quantity: f64,
-    lf_total_sell_quantity: f64,
-    mbp_indicator: BcastMBPIndicator,
-    closing_price: i32,
-    open_price: i32,
-    high_price: i32,
-    low_price: i32,
+    pub token: i32,
+    pub book_type: i16,
+    pub trading_status: i16,
+    pub volume_traded_today: u32,
+    pub last_traded_price: i32,
+    pub net_change_indicator: u8,
+    pub filler: u8,
+    pub net_price_change_from_closing_price: i32,
+    pub last_trade_quantity: i32,
+    pub last_trade_time: i32,
+    pub average_trade_price: i32,
+    pub auction_number: i16,
+    pub auction_status: i16,
+    pub initiator_type: i16,
+    pub initiator_price: i32,
+    pub initiator_quantity: i32,
+    pub auction_price: i32,
+    pub auction_quantity: i32,
+    pub mbp_info: [BcastMBPInfo; MAX_MBPINFO_IDX],
+    pub bb_total_buy_flag: i16,
+    pub bb_total_sell_flag: i16,
+    pub lf_total_buy_quantity: f64,
+    pub lf_total_sell_quantity: f64,
+    pub mbp_indicator: BcastMBPIndicator,
+    pub closing_price: i32,
+    pub open_price: i32,
+    pub high_price: i32,
+    pub low_price: i32,
 }
 
 #[derive(Debug, Twiddle, Clone, Copy)]

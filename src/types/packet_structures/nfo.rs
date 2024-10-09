@@ -191,7 +191,7 @@ pub struct TagMessageHeader {
     pub alpha_char: [u8; ALPHA_CHAR_LEN],
     pub trader_id: i32,
     pub error_code: i16,
-    pub timestamp: u128,
+    pub timestamp: u64,
     pub timestamp1: [u8; TIMESTAMP_LEN],
     pub timestamp2: [u8; TIMESTAMP_LEN],
     pub message_length: i16,
