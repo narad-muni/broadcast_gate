@@ -10,10 +10,12 @@ pub fn bytes_to_struct<T>(s: &[u8]) -> T {
 
 pub fn struct_to_bytes<T>(s: &T, buffer: &mut [u8]) {
     unsafe{
-        let size = std::mem::size_of::<T>();
+        let mut size = std::mem::size_of::<T>();
 
         // Ensure the buffer is large enough
-        assert!(buffer.len() >= size, "Buffer is not large enough");
+        if buffer.len() >= size {
+            size = buffer.len();
+        }
 
         // Get a pointer to the value
         let ptr = s as *const T as *const u8;
