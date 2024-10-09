@@ -20,7 +20,7 @@ fn main() {
 
     x = bytes_to_struct(&buf);
 
-    let z = u64::from_le_bytes([16,0,252,175,127,0,0,0]);
+    let z = u16::from_be_bytes([210,146]);
 
     println!("{}", z);
 

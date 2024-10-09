@@ -13,7 +13,7 @@ pub fn struct_to_bytes<T>(s: &T, buffer: &mut [u8]) {
         let mut size = std::mem::size_of::<T>();
 
         // Ensure the buffer is large enough
-        if buffer.len() >= size {
+        if buffer.len() < size {
             size = buffer.len();
         }
 
