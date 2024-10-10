@@ -22,7 +22,7 @@ impl OutputTrait for Counter {
     fn write(&mut self, _data: &Packet) {
         self.i += 1;
 
-        if self.i % 100 == 0 {
+        if self.i % 10000 == 0 {
             println!("{} {:?}", self.i, self.time.elapsed());
 
             self.time = Instant::now();

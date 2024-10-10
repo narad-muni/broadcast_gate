@@ -1,3 +1,4 @@
+mod constants;
 use utils::byte_utils::{bytes_to_partial_struct, bytes_to_struct, create_empty};
 
 mod utils;
