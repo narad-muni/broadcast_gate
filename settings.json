@@ -14,5 +14,6 @@
   "kafka_brokers": "10.6.43.25:9092",
   "kafka_topic_name": "rust",
   "kafka_config_path": "kafka_config.json",
-  "output_targets": ["counter", "kafka"]
+  "output_targets": ["counter"],
+  "source_ip": "172.18.2.223"
 }

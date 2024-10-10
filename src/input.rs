@@ -1,10 +1,10 @@
-use std::io::Read;
+use std::{mem::MaybeUninit, net::Ipv4Addr};
 
 use socket2::Socket;
 
 use crate::{
     constants::{BUF_SIZE, UNRECOVERABLE_ERROR_KINDS}, global::INPUT_QUEUE, settings, types::packet::Packet,
-    utils::udp_utils::build_socket,
+    utils::{byte_utils::uninit_to_buf, udp_utils::build_socket},
 };
 
 enum SocketType {
@@ -18,6 +18,7 @@ pub struct UdpInput<'a> {
     current: Option<&'a Socket>,
     current_id: SocketType,
     auto_switch: bool,
+    source_ip: Ipv4Addr,
 }
 
 impl<'a> UdpInput<'a> {
@@ -47,6 +48,7 @@ impl<'a> UdpInput<'a> {
             current: None,
             current_id: SocketType::Primary,
             auto_switch: settings.udp_auto_switch,
+            source_ip: settings.source_ip.parse().unwrap(),
         }
     }
 
@@ -55,39 +57,48 @@ impl<'a> UdpInput<'a> {
         self.current = Some(&self.primary);
 
         loop {
-            let mut buf = Packet([0; BUF_SIZE]);
+            // let mut buf = Packet([0; BUF_SIZE]);
+            let mut buf: [MaybeUninit<u8>; BUF_SIZE] = unsafe { MaybeUninit::uninit().assume_init() };
 
             // Value can never be none
             debug_assert!(self.current.is_some());
-
-            // If error, then proceed to switch
-            if let Err(e) = self.current.unwrap().read(&mut buf.0) {
-                // Check for client side errors
-                if UNRECOVERABLE_ERROR_KINDS.contains(&e.kind()) {
-                    panic!("Unrecoverable io error in udp input: {}", e);
+            
+            match self.current.unwrap().recv_from(&mut buf) {
+                Ok((_, addr)) => {
+                    // Drop packet if source ip doesn't match
+                    if *addr.as_socket_ipv4().unwrap().ip() != self.source_ip {
+                        continue;
+                    }
                 }
+                Err(e) => {
+                    // Check for client side errors
+                    if UNRECOVERABLE_ERROR_KINDS.contains(&e.kind()) {
+                        panic!("Unrecoverable io error in udp input: {}", e);
+                    }
 
-                // If autoswitch is false, then don't rotate
-                if !self.auto_switch {
+                    // If autoswitch is false, then don't rotate
+                    if !self.auto_switch {
+                        continue;
+                    }
+
+                    // Switch current id
+                    self.current_id = match self.current_id {
+                        SocketType::Primary => SocketType::Secondary,
+                        SocketType::Secondary => SocketType::Primary,
+                    };
+
+                    // Based on current id select new
+                    self.current = match self.current_id {
+                        SocketType::Primary => Some(&self.primary),
+                        SocketType::Secondary => Some(&self.secondary),
+                    };
+
                     continue;
                 }
-
-                // Switch current id
-                self.current_id = match self.current_id {
-                    SocketType::Primary => SocketType::Secondary,
-                    SocketType::Secondary => SocketType::Primary,
-                };
-
-                // Based on current id select new
-                self.current = match self.current_id {
-                    SocketType::Primary => Some(&self.primary),
-                    SocketType::Secondary => Some(&self.secondary),
-                };
-
-                continue;
             }
 
-            INPUT_QUEUE.push(buf);
+            let packet = Packet(uninit_to_buf(&buf));
+            INPUT_QUEUE.push(packet);
         }
     }
 }

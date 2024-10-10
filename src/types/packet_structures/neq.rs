@@ -44,36 +44,48 @@ pub enum NeqBroadcastTransactionMapping {
 
 pub fn build_neq_struct(transaction_id: i16, buf: &[u8]) -> Option<NeqBroadcastTransactionMapping> {
     match transaction_id {
-        5294 => None,
-        6501 => None,
-        6511 => None,
-        6521 => None,
-        6531 => None,
-        6571 => None,
-        6581 => None,
-        7200 => None,
-        7201 => None,
-        7206 => None,
-        7207 => None,
+        5294 => Some(NeqBroadcastTransactionMapping::BcastContMsg(bytes_to_struct(buf))),
+        6501 => Some(NeqBroadcastTransactionMapping::BcastJrnlVctMsg(bytes_to_struct(buf))),
+        6511 => Some(NeqBroadcastTransactionMapping::BcastOpenMessage(bytes_to_struct(buf))),
+        6521 => Some(NeqBroadcastTransactionMapping::BcastCloseMessage(bytes_to_struct(buf))),
+        6531 => Some(NeqBroadcastTransactionMapping::BcastPreopenShutdownMsg(bytes_to_struct(buf))),
+        6571 => Some(NeqBroadcastTransactionMapping::BcastNormalMktPreopenEnded(bytes_to_struct(buf))),
+        6581 => Some(NeqBroadcastTransactionMapping::BcastAuctionStatusChange(bytes_to_struct(buf))),
+        7200 => Some(NeqBroadcastTransactionMapping::BcastMboMbpCedtc(bytes_to_struct(buf))),
+        7201 => Some(NeqBroadcastTransactionMapping::BcastMwRoundRobinCedtc(bytes_to_struct(buf))),
+        7206 => Some(NeqBroadcastTransactionMapping::BcastSystemInformationOut(bytes_to_struct(buf))),
+        7207 => Some(NeqBroadcastTransactionMapping::BcastIndices(bytes_to_struct(buf))),
         7208 => Some(NeqBroadcastTransactionMapping::BcastOnlyMbpCedtc(bytes_to_struct(buf))),
-        7210 => None,
-        7214 => None,
-        7215 => None,
-        7216 => None,
-        7306 => None,
-        7764 => None,
-        8207 => None,
-        9010 => None,
-        9011 => None,
-        18130 => None,
-        18201 => None,
-        18700 => None,
-        18703 => None,
+        7210 => Some(NeqBroadcastTransactionMapping::BcastCallAuctionOrdCxlUpdate(bytes_to_struct(buf))),
+        7214 => Some(NeqBroadcastTransactionMapping::BcastCallAuctionMbpCedtc(bytes_to_struct(buf))),
+        7215 => Some(NeqBroadcastTransactionMapping::BcastCaMwCedtc(bytes_to_struct(buf))),
+        7216 => Some(NeqBroadcastTransactionMapping::BcastIndicesVix(bytes_to_struct(buf))),
+        7306 => Some(NeqBroadcastTransactionMapping::BcastPartMstrChg(bytes_to_struct(buf))),
+        7764 => Some(NeqBroadcastTransactionMapping::BcastSymbolStatusChangeAction(bytes_to_struct(buf))),
+        8207 => Some(NeqBroadcastTransactionMapping::BcastIndicativeIndices(bytes_to_struct(buf))),
+        9010 => Some(NeqBroadcastTransactionMapping::BcastTurnoverExceeded(bytes_to_struct(buf))),
+        9011 => Some(NeqBroadcastTransactionMapping::BcastBrokerReactivated(bytes_to_struct(buf))),
+        18130 => Some(NeqBroadcastTransactionMapping::BcastSecurityStatusChg(bytes_to_struct(buf))),
+        18201 => Some({
+            if buf[40] == b'H' {
+                NeqBroadcastTransactionMapping::BcastMarketStatsReportDataCedtcH(bytes_to_struct(
+                    buf,
+                ))
+            } else {
+                NeqBroadcastTransactionMapping::BcastMarketStatsReportDataCedtcR(bytes_to_struct(
+                    buf,
+                ))
+            }
+        }),
+        18700 => Some(NeqBroadcastTransactionMapping::BcastAuctionInquiryOut(bytes_to_struct(buf))),
+        18703 => Some(NeqBroadcastTransactionMapping::BcastTickerAndMktIndex(bytes_to_struct(buf))),
         18705 => Some(NeqBroadcastTransactionMapping::BcastOnlyMbp(bytes_to_struct(buf))),
-        18707 => None,
-        18708 => None,
-        18720 => None,
-        _ => {None},
+        18707 => Some({
+            NeqBroadcastTransactionMapping::BcastSecurityStatusChgPreopen(bytes_to_struct(buf))
+        }),
+        18708 => Some(NeqBroadcastTransactionMapping::BcastBuyBack(bytes_to_struct(buf))),
+        18720 => Some(NeqBroadcastTransactionMapping::BcastSecurityMstrChg(bytes_to_struct(buf))),
+        _ => None,
     }
 }
 

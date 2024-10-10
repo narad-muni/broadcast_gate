@@ -18,6 +18,7 @@ pub struct Settings {
     pub primary_mcast_port: usize,
     pub secondary_mcast_ip: String,
     pub secondary_mcast_port: usize,
+    pub source_ip: String,
 
     pub output_udp_ip: String,
     pub output_udp_port: usize,

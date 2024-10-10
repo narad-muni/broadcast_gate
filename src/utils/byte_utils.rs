@@ -1,4 +1,6 @@
-use std::{mem, ptr};
+use std::{mem::{self, MaybeUninit}, ptr};
+
+use crate::constants::BUF_SIZE;
 
 pub fn bytes_to_struct<T>(s: &[u8]) -> T {
     unsafe {
@@ -22,6 +24,12 @@ pub fn struct_to_bytes<T>(s: &T, buffer: &mut [u8]) {
 
         // Copy the bytes into the buffer
         std::ptr::copy_nonoverlapping(ptr, buffer.as_mut_ptr(), size);
+    }
+}
+
+pub fn uninit_to_buf(src: &[MaybeUninit<u8>; BUF_SIZE]) -> [u8; BUF_SIZE] {
+    unsafe {
+        std::mem::transmute::<[MaybeUninit<u8>; BUF_SIZE], [u8; BUF_SIZE]>(*src)
     }
 }
 
