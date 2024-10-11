@@ -75,7 +75,7 @@ impl Packet {
                 let trans_code = BcastHeaders::get_trans_code(&packet.0);
 
                 // Fetch worktype for compressed packet
-                let mut work_type = if trans_code == BCAST_ONLY_MBP || trans_code == BCAST_ONLY_MBP_EQ || trans_code == BCAST_MBO_MBP {
+                let work_type = if trans_code == BCAST_ONLY_MBP || trans_code == BCAST_ONLY_MBP_EQ || trans_code == BCAST_MBO_MBP {
 
                     let token = get_token(trans_code, &packet.0, 0);
 
@@ -117,7 +117,7 @@ impl Packet {
 
                         // Get token for second packet and update work type
                         let token = get_token(trans_code, &packet.0, 1);
-                        work_type = WorkType::TokenWise(token);
+                        let work_type = WorkType::TokenWise(token);
 
                         // Mutable ref to slice
                         let no_of_records = bytes_to_struct_mut::<i16>(&mut packet.0[start..end]);
