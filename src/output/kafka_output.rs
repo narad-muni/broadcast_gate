@@ -52,7 +52,5 @@ impl OutputTrait for KafkaOutput {
             .payload(&data);
 
         self.producer.send(payload).unwrap();
-
-        self.producer.poll(None);
     }
 }
