@@ -1,7 +1,7 @@
 use std::{collections::HashMap, fs};
 
 use rdkafka::{
-    producer::{BaseProducer, BaseRecord},
+    producer::{BaseRecord, DefaultProducerContext, NoCustomPartitioner, ThreadedProducer},
     ClientConfig,
 };
 
@@ -10,7 +10,7 @@ use crate::{settings, types::packet::Packet};
 use super::OutputTrait;
 
 pub struct KafkaOutput {
-    producer: BaseProducer,
+    producer: ThreadedProducer<DefaultProducerContext, NoCustomPartitioner>,
     topic_name: String,
     partition_no: i32,
 }
@@ -31,7 +31,7 @@ impl KafkaOutput {
         }
 
         // Build producer from config
-        let producer: BaseProducer = config
+        let producer: ThreadedProducer<DefaultProducerContext, NoCustomPartitioner> = config
             .set("bootstrap.servers", &settings.kafka_brokers)
             .create()
             .expect("Producer creation failed");
