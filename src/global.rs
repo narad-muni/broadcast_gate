@@ -1,4 +1,4 @@
-use std::{cell::UnsafeCell, sync::{
+use std::{mem::size_of, sync::{
     atomic::{AtomicBool, AtomicPtr},
     OnceLock,
 }};

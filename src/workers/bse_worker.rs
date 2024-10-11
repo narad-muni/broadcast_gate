@@ -1,3 +1,5 @@
+use std::mem::size_of;
+
 use crate::{
     constants::{
         BEST_BID_VALUE, BEST_OFFER_VALUE, COMPLEX_MBP_UNCOMPRESSED_DATA_LEN,

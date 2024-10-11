@@ -1,4 +1,4 @@
-use std::mem::offset_of;
+use std::mem::{offset_of, size_of};
 
 use crate::{
     constants::*,
