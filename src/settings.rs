@@ -1,6 +1,6 @@
 use std::{env, fs};
 
-use crate::{global::SETTINGS, types::settings::Settings};
+use crate::{global::{EXCHANGE, SETTINGS}, types::settings::Settings};
 
 pub fn init() {
     let args = env::args().collect::<Vec<String>>();
@@ -16,6 +16,11 @@ pub fn init() {
 
     // Initialize settings
     SETTINGS.get_or_init(|| settings);
+
+    // Set global exchange
+    unsafe{
+        EXCHANGE = &SETTINGS.get().unwrap().exchange;
+    }
 }
 
 pub fn get() -> &'static Settings {

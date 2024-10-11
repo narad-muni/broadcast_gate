@@ -23,6 +23,8 @@ pub struct Settings {
     pub output_udp_ip: String,
     pub output_udp_port: usize,
 
+    pub steps: usize,
+
     pub thread_count: usize,
 
     pub kafka_partition_no: usize,

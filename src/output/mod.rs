@@ -36,10 +36,12 @@ trait OutputTrait {
 
 impl Output {
     pub fn new() -> Self {
+        let settings = settings::get();
+
         let kafka = UnsafeCell::new(KafkaOutput::new());
         let udp = UnsafeCell::new(UdpOutput::new());
         let stdout = UnsafeCell::new(StdOut::new());
-        let counter = UnsafeCell::new(Counter::new());
+        let counter = UnsafeCell::new(Counter::new(settings.steps));
         let output_targets = settings::get().output_targets.clone();
 
         Self {

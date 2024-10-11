@@ -66,7 +66,7 @@ pub fn work_on_queue(work: Work) {
 
         (work.processing_fn)(&mut packet);
 
-        // OUTPUT.write(&packet);
+        OUTPUT.write(&packet);
 
         if !work_queue.is_empty() {
             if TPOOL_QUEUE.is_empty() {

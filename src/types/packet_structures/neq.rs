@@ -6,8 +6,6 @@ use crate::{
 };
 use twiddler::Twiddle;
 
-use super::nfo::BcastMBOMBP;
-
 #[derive(Debug)]
 pub enum NeqBroadcastTransactionMapping {
     BcastContMsg(BcastContMsg),
@@ -242,6 +240,24 @@ pub struct BcastJournalMessage {
 pub struct BcastSECInfo {
     symbol: [u8; SYMBOL_LEN],
     series: [u8; SERIES_LEN],
+}
+
+#[repr(C, packed(2))]
+#[derive(Debug, Twiddle, Clone, Copy)]
+pub struct BcastMBOMBP {
+    pub bcast_header: BcastHeaders,
+    pub mbo_data: BcastInteractiveMBOData,
+    pub mbp_info: [BcastMBPInfo; MAX_MBPINFO_IDX], // 10
+    pub total_buy_flag: i16,
+    pub total_sell_flag: i16,
+    pub total_buy_qty: i64,
+    pub total_sell_qty: i64,
+    pub mbo_mbp_indicator: BcastMBOMBPIndicator,
+    pub closing_price: i32,
+    pub open_price: i32,
+    pub high_price: i32,
+    pub low_price: i32,
+    pub reserved1: [u8; 4],
 }
 
 #[derive(Debug, Twiddle, Clone, Copy)]
@@ -491,25 +507,25 @@ pub struct BcastMBPInfoCEDTC {
 #[derive(Debug, Twiddle, Clone, Copy)]
 #[repr(C, packed(2))]
 pub struct BcastInteractiveMBOData {
-    token: i32,
-    book_type: i16,
-    trading_status: i16,
-    volume_traded_today: i64,
-    last_traded_price: i32,
-    net_change_indicator: u8,
-    filler: u8,
-    net_price_change_from_closing_price: i32,
-    last_trade_quantity: i32,
-    last_trade_time: i32,
-    average_trade_price: i32,
-    auction_number: i16,
-    auction_status: i16,
-    initiator_type: i16,
-    initiator_price: i32,
-    initiator_quantity: i32,
-    auction_price: i32,
-    auction_quantity: i32,
-    mbo_info: [BcastMBOInfo; MAX_MBOINFO_IDX],
+    pub token: i32,
+    pub book_type: i16,
+    pub trading_status: i16,
+    pub volume_traded_today: i64,
+    pub last_traded_price: i32,
+    pub net_change_indicator: u8,
+    pub filler: u8,
+    pub net_price_change_from_closing_price: i32,
+    pub last_trade_quantity: i32,
+    pub last_trade_time: i32,
+    pub average_trade_price: i32,
+    pub auction_number: i16,
+    pub auction_status: i16,
+    pub initiator_type: i16,
+    pub initiator_price: i32,
+    pub initiator_quantity: i32,
+    pub auction_price: i32,
+    pub auction_quantity: i32,
+    pub mbo_info: [BcastMBOInfo; MAX_MBOINFO_IDX],
 }
 
 #[derive(Debug, Twiddle, Clone, Copy)]

@@ -3,13 +3,12 @@ use std::mem::offset_of;
 use rdkafka::message::ToBytes;
 
 use crate::{
-    constants::{BCAST_ONLY_MBP, BCAST_ONLY_MBP_EQ, BUF_SIZE, MAX_SUB_PACKETS, SKIP_BYTES},
-    global::NSE_HEADER_SIZE,
-    utils::byte_utils::{bytes_to_struct, bytes_to_struct_mut, create_empty},
+    constants::{BCAST_MBO_MBP, BCAST_ONLY_MBP, BCAST_ONLY_MBP_EQ, BUF_SIZE, MAX_SUB_PACKETS, SKIP_BYTES},
+    utils::byte_utils::{bytes_to_struct, bytes_to_struct_mut, create_empty}, workers::nse_worker::get_token,
 };
 
 use super::{
-    packet_structures::{neq::BcastHeaders, nfo::BcastOnlyMBP, CompressionData, PackData},
+    packet_structures::{neq::BcastHeaders, nfo, CompressionData, PackData},
     work::WorkType,
 };
 
@@ -76,12 +75,9 @@ impl Packet {
                 let trans_code = BcastHeaders::get_trans_code(&packet.0);
 
                 // Fetch worktype for compressed packet
-                let work_type = if trans_code == BCAST_ONLY_MBP || trans_code == BCAST_ONLY_MBP_EQ {
-                    let token_start = NSE_HEADER_SIZE + SKIP_BYTES + size_of::<i16>();
-                    let token_end = token_start + size_of::<i32>();
+                let mut work_type = if trans_code == BCAST_ONLY_MBP || trans_code == BCAST_ONLY_MBP_EQ || trans_code == BCAST_MBO_MBP {
 
-                    let token =
-                        i32::from_be_bytes(packet.0[token_start..token_end].try_into().unwrap());
+                    let token = get_token(trans_code, &packet.0, 0);
 
                     WorkType::TokenWise(token)
                 } else {
@@ -91,16 +87,24 @@ impl Packet {
                     WorkType::SegmentWise(segment)
                 };
 
-                // For 7208, has multiple records
-                // Seperate each token for parallel processing
-                if let WorkType::TokenWise(_) = work_type {
-                    let start = SKIP_BYTES + offset_of!(BcastOnlyMBP, no_of_records);
+                
+                if trans_code == BCAST_MBO_MBP {
+                    // Used because cannot use another condition with below if let
+                    // Below code shouldn't be executed for BCAST_MBO_MBP 7200
+                } else if let WorkType::TokenWise(_) = work_type {
+                    // For 7208, 18705, has multiple records
+                    // Seperate each token for parallel processing
+
+                    // common for eq, fao, cd for no_of_records offset
+                    let start = SKIP_BYTES + offset_of!(nfo::BcastOnlyMBP, no_of_records);
                     let end = start + size_of::<i16>();
 
+                    // Get no of packets
                     let mut no_of_records: i16 = bytes_to_struct(&packet.0[start..end]);
                     no_of_records = no_of_records.to_be();
 
                     // Set no of records to 0, for original packet
+                    // No need to twiddle 0
                     *bytes_to_struct_mut::<i16>(&mut packet.0[start..end]) = 0;
 
                     // If more than one record
@@ -111,12 +115,17 @@ impl Packet {
                         // Set no of records to zero and push
                         let mut packet = packet.clone();
 
+                        // Get token for second packet and update work type
+                        let token = get_token(trans_code, &packet.0, 1);
+                        work_type = WorkType::TokenWise(token);
+
                         // Mutable ref to slice
                         let no_of_records = bytes_to_struct_mut::<i16>(&mut packet.0[start..end]);
                         *no_of_records = 1;
-                        // Twiddle
+                        // Twiddle, because this will be twiddeled again while processing
                         *no_of_records = no_of_records.to_be();
 
+                        // Add packet and increase packet idx
                         packets[packet_idx] = (packet, work_type);
                         packet_idx += 1;
                     }

@@ -57,7 +57,7 @@ pub fn build_nfo_struct(transaction_id: i16, buf: &[u8]) -> Option<NfoBroadcastT
         7202 => Some(NfoBroadcastTransactionMapping::BcastTickerAndMktIndex(bytes_to_struct(buf))),
         7203 => Some(NfoBroadcastTransactionMapping::BcastIndustryIndexUpdate(bytes_to_struct(buf))),
         7206 => Some(NfoBroadcastTransactionMapping::BcastSystemInformationOut(bytes_to_struct(buf))),
-        7208 | 18705 => Some(NfoBroadcastTransactionMapping::BcastOnlyMbp(bytes_to_struct(buf))),
+        7208 => Some(NfoBroadcastTransactionMapping::BcastOnlyMbp(bytes_to_struct(buf))),
         7210 => Some(NfoBroadcastTransactionMapping::BcastSecurityStatusChgPreopen(bytes_to_struct(buf))),
         7211 => Some(NfoBroadcastTransactionMapping::BcastSpdMbpDelta(bytes_to_struct(buf))),
         7220 => Some({
@@ -736,7 +736,6 @@ pub struct BcastInteractiveMBPData {
     pub volume_traded_today: u32,
     pub last_traded_price: i32,
     pub net_change_indicator: u8,
-    pub filler: u8,
     pub net_price_change_from_closing_price: i32,
     pub last_trade_quantity: i32,
     pub last_trade_time: i32,

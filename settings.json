@@ -10,6 +10,7 @@
   "output_udp_ip": "225.0.0.0",
   "output_udp_port": 7813,
   "thread_count": 4,
+  "steps": 1000,
   "kafka_partition_no": 0,
   "kafka_brokers": "10.6.43.25:9092",
   "kafka_topic_name": "rust",
