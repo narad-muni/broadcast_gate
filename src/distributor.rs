@@ -1,6 +1,5 @@
 use std::{
-    sync::atomic::{AtomicPtr, Ordering},
-    thread::{self, JoinHandle},
+    alloc::{dealloc, Layout}, sync::atomic::{AtomicPtr, Ordering}, thread::{self, JoinHandle}
 };
 
 use crate::{
@@ -165,7 +164,7 @@ impl Distributor {
                 // means it is still allocated in heap
                 // manually create box from it and drop
                 unsafe {
-                    let _ = Box::from_raw(old_packet);
+                    dealloc(old_packet as *mut u8, Layout::new::<Packet>());
                 }
             }
         } else {
