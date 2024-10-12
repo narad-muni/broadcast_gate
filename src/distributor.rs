@@ -146,14 +146,14 @@ impl Distributor {
     }
 
     pub fn distribute_to_map(packet: Packet, work: Work) {
-        let boxed = Box::new(packet);
+        let boxed = Box::into_raw(Box::new(packet));
 
         let atomic_ptr = TOKEN_WISE_MAP.get(&work.work_type.get_id());
 
         if let Some(atomic_ptr) = atomic_ptr {
             // If value exists
             // retreive old packet by swaping with new value
-            let old_packet = atomic_ptr.swap(Box::into_raw(boxed), Ordering::SeqCst);
+            let old_packet = atomic_ptr.swap(boxed, Ordering::SeqCst);
 
             // If old packet ptr was set to null
             // create new work
@@ -168,7 +168,7 @@ impl Distributor {
                 }
             }
         } else {
-            let atomic_ptr = AtomicPtr::new(Box::into_raw(boxed));
+            let atomic_ptr = AtomicPtr::new(boxed);
 
             TOKEN_WISE_MAP.insert(work.work_type.get_id(), atomic_ptr);
 
