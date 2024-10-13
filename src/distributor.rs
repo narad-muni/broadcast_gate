@@ -58,7 +58,7 @@ impl Distributor {
             if let WorkType::TokenWise(_) = work_type {
                 Distributor::distribute_to_map(packet, work);
             } else {
-                // Distributor::distribute_to_queue(packet, work);
+                Distributor::distribute_to_queue(packet, work);
             }
         }
     }
