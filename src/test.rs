@@ -1,29 +1,70 @@
+use std::{alloc::{dealloc, Layout}, sync::atomic::{AtomicPtr, Ordering}, thread, time::Duration};
+
+use crossbeam::queue::SegQueue;
+use types::safe_hashmap::SafeHashMap;
+
 mod constants;
-use utils::byte_utils::{bytes_to_partial_struct, bytes_to_struct, create_empty};
-
+mod distributor;
+mod global;
+mod input;
+mod output;
+mod settings;
+mod threadpool;
+mod types;
 mod utils;
+mod workers;
+mod macros;
 
-#[derive(Debug)]
-#[repr(C, packed(2))]
-struct X {
-    a: u32,
-    b: i16,
+lazy_static::lazy_static! {
+    static ref MAP: SafeHashMap<i32, AtomicPtr<i32>> = SafeHashMap::new();
 }
 
+static q: SegQueue<i32> = SegQueue::<i32>::new();
+
 fn main() {
-    let mut x: X = create_empty();
 
-    let buf = [1, 0, 0, 0];
+    let boxed = Box::into_raw(Box::new(10));
+    MAP.insert(1, AtomicPtr::new(boxed));
 
-    bytes_to_partial_struct(&mut x, &buf);
+    let t1 = thread::spawn(|| {
+        loop {unsafe{
+            
+            let data = q.pop();
 
-    println!("{x:?}");
+            if data.is_none() {
+                continue;
+            }
 
-    x = bytes_to_struct(&buf);
+            let ptr = MAP.get(&1).unwrap();
 
-    let z = u16::from_be_bytes([210,146]);
+            let boxed = Box::into_raw(Box::new(data.unwrap()));
 
-    println!("{}", z);
+            let old = ptr.swap(boxed, Ordering::SeqCst);
 
-    println!("{x:?}");
+            dealloc(old as *mut u8, Layout::new::<i32>());
+        }}
+    });
+
+    let t2 = thread::spawn(|| {
+        loop {unsafe{
+            let data = q.pop();
+
+            if data.is_none() {
+                continue;
+            }
+            let ptr = MAP.get(&1).unwrap();
+
+            let boxed = Box::into_raw(Box::new(data.unwrap()));
+
+            let old = ptr.swap(boxed, Ordering::SeqCst);
+
+            dealloc(old as *mut u8, Layout::new::<i32>());
+        }}
+    });
+
+    loop {
+        q.push(10);
+
+        thread::sleep(Duration::from_millis(10));
+    }
 }

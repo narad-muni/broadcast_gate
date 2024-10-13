@@ -1,7 +1,7 @@
 use std::{
     ptr,
     sync::atomic::Ordering,
-    thread::{self, JoinHandle},
+    thread::{self, JoinHandle}
 };
 
 use threadpool::ThreadPool;
@@ -42,13 +42,13 @@ impl ThreadPoolMaster {
 }
 
 pub fn work_on_map(work: Work) {
-    let value = TOKEN_WISE_MAP.get(&work.work_type.get_id()).unwrap();
+    let packet_ptr = TOKEN_WISE_MAP.get(&work.work_type.get_id()).unwrap();
 
-    let packet_ptr = value.swap(ptr::null_mut(), Ordering::SeqCst);
+    let old_packet = packet_ptr.swap(ptr::null_mut(), Ordering::SeqCst);
     unsafe {
         // Creating box from raw ptr is unsafe, because it could be null
         // however, we only ensure that this value is not null
-        let mut packet = Box::from_raw(packet_ptr);
+        let mut packet = Box::from_raw(old_packet);
 
         // Call associated function
         (work.processing_fn)(&mut *packet);
@@ -62,8 +62,6 @@ pub fn work_on_queue(work: Work) {
     let work_lock = &WORK_LOCKS[work.work_type.get_id()];
 
     while let Some(mut packet) = work_queue.pop() {
-        // println!("Data received in work_on_queue: {:?}", packet);
-
         (work.processing_fn)(&mut packet);
 
         OUTPUT.write(&packet);
