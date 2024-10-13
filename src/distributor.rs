@@ -58,7 +58,7 @@ impl Distributor {
             if let WorkType::TokenWise(_) = work_type {
                 Distributor::distribute_to_map(packet, work);
             } else {
-                Distributor::distribute_to_queue(packet, work);
+                // Distributor::distribute_to_queue(packet, work);
             }
         }
     }
@@ -159,7 +159,7 @@ impl Distributor {
             // create new work
             if old_packet.is_null() {
                 TPOOL_QUEUE.push(work);
-            } else {
+            } else if !old_packet.is_null() {
                 // If old packet was not null
                 // means it is still allocated in heap
                 // manually create box from it and drop
