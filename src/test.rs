@@ -21,32 +21,32 @@ lazy_static::lazy_static! {
 
 fn main() {
 
-    let boxed = Box::into_raw(Box::new(10));
-    MAP.insert(1, AtomicPtr::new(boxed));
+    // let boxed = Box::into_raw(Box::new(10));
+    // MAP.insert(1, AtomicPtr::new(boxed));
 
-    let t1 = thread::spawn(|| {
-        let ptr = MAP.get(&1).unwrap();
-        loop {unsafe{
-            let boxed = Box::into_raw(Box::new(10));
+    // let t1 = thread::spawn(|| {
+    //     let ptr = MAP.get(&1).unwrap();
+    //     loop {unsafe{
+    //         let boxed = Box::into_raw(Box::new(10));
 
-            let old = ptr.swap(boxed, Ordering::SeqCst);
+    //         let old = ptr.swap(boxed, Ordering::SeqCst);
 
-            dealloc(old as *mut u8, Layout::new::<i32>());
-            dealloc(old as *mut u8, Layout::new::<i32>());
-        }}
-    });
+    //         dealloc(old as *mut u8, Layout::new::<i32>());
+    //         dealloc(old as *mut u8, Layout::new::<i32>());
+    //     }}
+    // });
 
-    let t2 = thread::spawn(|| {
-        let ptr = MAP.get(&1).unwrap();
+    // let t2 = thread::spawn(|| {
+    //     let ptr = MAP.get(&1).unwrap();
 
-        loop {unsafe{
-            let old = ptr.swap(ptr::null_mut(), Ordering::SeqCst);
+    //     loop {unsafe{
+    //         let old = ptr.swap(ptr::null_mut(), Ordering::SeqCst);
 
-            // let _ = Box::from_raw(old);
-            dealloc(old as *mut u8, Layout::new::<i32>());
-        }}
-    });
+    //         // let _ = Box::from_raw(old);
+    //         dealloc(old as *mut u8, Layout::new::<i32>());
+    //     }}
+    // });
 
-    t1.join().unwrap();
-    t2.join().unwrap();
+    // t1.join().unwrap();
+    // t2.join().unwrap();
 }

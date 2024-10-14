@@ -46,10 +46,13 @@ impl KafkaOutput {
 
 impl OutputTrait for KafkaOutput {
     fn write(&mut self, data: &Packet) {
+
+        let slice = &data.0[..data.1];
+
         let payload = BaseRecord::to(&self.topic_name)
             .partition(self.partition_no)
             .key(&())
-            .payload(&data);
+            .payload(slice);
 
         self.producer.send(payload).unwrap();
     }

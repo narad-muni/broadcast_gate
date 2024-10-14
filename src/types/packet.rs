@@ -1,7 +1,5 @@
 use std::mem::{offset_of, size_of};
 
-use rdkafka::message::ToBytes;
-
 use crate::{
     constants::{BCAST_MBO_MBP, BCAST_ONLY_MBP, BCAST_ONLY_MBP_EQ, BUF_SIZE, MAX_SUB_PACKETS, SKIP_BYTES},
     utils::byte_utils::{bytes_to_struct, bytes_to_struct_mut, create_empty}, workers::nse_worker::get_token,
@@ -13,14 +11,7 @@ use super::{
 };
 
 #[derive(Debug, Clone, Copy)]
-pub struct Packet(pub [u8; BUF_SIZE]);
-
-/// Required for RdKafka's `ToBytes` trait to allow sending `Packet` to kafka
-impl ToBytes for Packet {
-    fn to_bytes(&self) -> &[u8] {
-        &self.0
-    }
-}
+pub struct Packet(pub [u8; BUF_SIZE], pub usize);
 
 impl Packet {
     pub fn get_nse_packets(&self) -> ([(Packet, WorkType); MAX_SUB_PACKETS], usize) {
@@ -42,7 +33,7 @@ impl Packet {
 
             // Packet is not compressed
             if compression_data.compression_len == 0 {
-                let packet = Packet(compression_data.broadcast_data);
+                let packet = Packet(compression_data.broadcast_data, BUF_SIZE);
 
                 // Extract message length to increase offset
                 let start = SKIP_BYTES + offset_of!(BcastHeaders, message_length);
@@ -70,7 +61,7 @@ impl Packet {
                 mylzo::decompress(&mut compressed_packet, &mut decompressed_packet)
                     .expect("Error decompressing packet");
 
-                let mut packet = Packet(decompressed_packet);
+                let mut packet = Packet(decompressed_packet, BUF_SIZE);
 
                 let trans_code = BcastHeaders::get_trans_code(&packet.0);
 

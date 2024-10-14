@@ -1,7 +1,7 @@
 use std::{mem::size_of, time::{SystemTime, UNIX_EPOCH}};
 
 use crate::{
-    constants::{BCAST_MBO_MBP, BCAST_ONLY_MBP, BCAST_ONLY_MBP_EQ, MAX_BUY_SELL_DEPTH_IDX, MAX_MBPINFO_IDX, SKIP_BYTES}, global::{EXCHANGE, NSE_HEADER_SIZE}, types::{
+    constants::{BCAST_MBO_MBP, BCAST_ONLY_MBP, BCAST_ONLY_MBP_EQ, MAX_BUY_SELL_DEPTH_IDX, MAX_MARKET_DEPTH_IDX, MAX_MBPINFO_IDX, SKIP_BYTES}, global::{EXCHANGE, NSE_HEADER_SIZE}, types::{
         packet::Packet,
         packet_structures::{
             ncd::{build_ncd_struct, NcdBroadcastTransactionMapping},
@@ -23,10 +23,10 @@ pub fn cast_and_twiddle_nfo(packet: &mut Packet) {
 
         // Convert struct to custom struct for 7208 and 7200
         if let NfoBroadcastTransactionMapping::BcastMboMbpUpdate(s) = &mut nfo_struct {
-            let st = convert_mbo_mbp(s);
+            let st = convert_mbo_mbp(s, &mut packet.1);
             struct_to_bytes(&st, &mut packet.0);
         } else if let NfoBroadcastTransactionMapping::BcastOnlyMbp(s) = &mut nfo_struct {
-            let st = convert_only_mbp(s);
+            let st = convert_only_mbp(s, &mut packet.1);
             struct_to_bytes(&st, &mut packet.0);
         } else {
             nfo_struct.to_bytes(&mut packet.0);
@@ -42,13 +42,13 @@ pub fn cast_and_twiddle_neq(packet: &mut Packet) {
 
         // Convert struct to custom struct for 7208 and 7200
         if let NeqBroadcastTransactionMapping::BcastMboMbpCedtc(s) = &mut neq_struct {
-            let st = convert_mbo_mbp_eq(s);
+            let st = convert_mbo_mbp_eq(s, &mut packet.1);
             struct_to_bytes(&st, &mut packet.0);
         } else if let NeqBroadcastTransactionMapping::BcastOnlyMbpCedtc(s) = &mut neq_struct {
-            let st = convert_only_mbp_cedtc(s);
+            let st = convert_only_mbp_cedtc(s, &mut packet.1);
             struct_to_bytes(&st, &mut packet.0);
         } else if let NeqBroadcastTransactionMapping::BcastOnlyMbp(s) = &mut neq_struct {
-            let st = convert_only_mbp_eq(s);
+            let st = convert_only_mbp_eq(s, &mut packet.1);
             struct_to_bytes(&st, &mut packet.0);
         } else {
             neq_struct.to_bytes(&mut packet.0);
@@ -64,11 +64,11 @@ pub fn cast_and_twiddle_ncd(packet: &mut Packet) {
 
         // Convert struct to custom struct for 7208 and 7200
         if let NcdBroadcastTransactionMapping::BcastMboMbpUpdate(s) = &mut ncd_struct {
-            let st = convert_mbo_mbp(s);
+            let st = convert_mbo_mbp(s, &mut packet.1);
 
             struct_to_bytes(&st, &mut packet.0);
         } else if let NcdBroadcastTransactionMapping::BcastOnlyMbp(s) = &mut ncd_struct {
-            let st = convert_only_mbp(s);
+            let st = convert_only_mbp(s, &mut packet.1);
 
             struct_to_bytes(&st, &mut packet.0);
         } else {
@@ -78,7 +78,7 @@ pub fn cast_and_twiddle_ncd(packet: &mut Packet) {
 }
 
 // 7200 for fao, cd
-pub fn convert_mbo_mbp(bcast_mbo_mbp: &mut nfo::BcastMBOMBP) -> TagMarketPictureBroadcast {
+pub fn convert_mbo_mbp(bcast_mbo_mbp: &mut nfo::BcastMBOMBP, packet_size: &mut usize) -> TagMarketPictureBroadcast {
     let header = TagMessageHeader {
         message_code: bcast_mbo_mbp.bcast_header.trans_code as i32,
         transaction_type: 0,
@@ -144,11 +144,13 @@ pub fn convert_mbo_mbp(bcast_mbo_mbp: &mut nfo::BcastMBOMBP) -> TagMarketPicture
         market_depth_info,
     };
 
+    *packet_size = size_of::<TagMarketPictureBroadcast>() - (size_of::<TagMarketDepthInfo>() * (MAX_MARKET_DEPTH_IDX - mkt_depth_cnt));
+
     picture
 }
 
 // 7200 for eq
-pub fn convert_mbo_mbp_eq(bcast_mbo_mbp: &mut neq::BcastMBOMBP) -> TagMarketPictureBroadcast {
+pub fn convert_mbo_mbp_eq(bcast_mbo_mbp: &mut neq::BcastMBOMBP, packet_size: &mut usize) -> TagMarketPictureBroadcast {
     let header = TagMessageHeader {
         message_code: bcast_mbo_mbp.bcast_header.trans_code as i32,
         transaction_type: 0,
@@ -214,11 +216,13 @@ pub fn convert_mbo_mbp_eq(bcast_mbo_mbp: &mut neq::BcastMBOMBP) -> TagMarketPict
         market_depth_info,
     };
 
+    *packet_size = size_of::<TagMarketPictureBroadcast>() - (size_of::<TagMarketDepthInfo>() * (MAX_MARKET_DEPTH_IDX - mkt_depth_cnt));
+
     picture
 }
 
 // 7208 fao, cd
-pub fn convert_only_mbp(bcast_only_mbp: &mut nfo::BcastOnlyMBP) -> TagMarketPictureBroadcast {
+pub fn convert_only_mbp(bcast_only_mbp: &mut nfo::BcastOnlyMBP, packet_size: &mut usize) -> TagMarketPictureBroadcast {
     let header = TagMessageHeader {
         message_code: bcast_only_mbp.bcast_header.trans_code as i32,
         transaction_type: 0,
@@ -288,11 +292,13 @@ pub fn convert_only_mbp(bcast_only_mbp: &mut nfo::BcastOnlyMBP) -> TagMarketPict
         market_depth_info,
     };
 
+    *packet_size = size_of::<TagMarketPictureBroadcast>() - (size_of::<TagMarketDepthInfo>() * (MAX_MARKET_DEPTH_IDX - mkt_depth_cnt));
+
     picture
 }
 
 // 18705 eq
-pub fn convert_only_mbp_eq(bcast_only_mbp: &mut neq::BcastOnlyMBP) -> TagMarketPictureBroadcast {
+pub fn convert_only_mbp_eq(bcast_only_mbp: &mut neq::BcastOnlyMBP, packet_size: &mut usize) -> TagMarketPictureBroadcast {
     let header = TagMessageHeader {
         message_code: bcast_only_mbp.bcast_header.trans_code as i32,
         transaction_type: 0,
@@ -362,12 +368,15 @@ pub fn convert_only_mbp_eq(bcast_only_mbp: &mut neq::BcastOnlyMBP) -> TagMarketP
         market_depth_info,
     };
 
+    *packet_size = size_of::<TagMarketPictureBroadcast>() - (size_of::<TagMarketDepthInfo>() * (MAX_MARKET_DEPTH_IDX - mkt_depth_cnt));
+
     picture
 }
 
 // 7208 eq
 pub fn convert_only_mbp_cedtc(
     bcast_only_mbp_cedtc: &mut BcastOnlyMBPCEDTC,
+    packet_size: &mut usize,
 ) -> TagMarketPictureBroadcast {
     let header = TagMessageHeader {
         message_code: bcast_only_mbp_cedtc.bcast_header.trans_code as i32,
@@ -438,6 +447,8 @@ pub fn convert_only_mbp_cedtc(
         trading_status: bcast_only_mbp_cedtc.mbp_data[idx].trading_status,
         market_depth_info,
     };
+
+    *packet_size = size_of::<TagMarketPictureBroadcast>() - (size_of::<TagMarketDepthInfo>() * (MAX_MARKET_DEPTH_IDX - mkt_depth_cnt));
 
     picture
 }

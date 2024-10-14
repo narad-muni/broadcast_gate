@@ -97,7 +97,7 @@ impl<'a> UdpInput<'a> {
                 }
             }
 
-            let packet = Packet(uninit_to_buf(&buf));
+            let packet = Packet(uninit_to_buf(&buf), BUF_SIZE);
             INPUT_QUEUE.push(packet);
         }
     }
