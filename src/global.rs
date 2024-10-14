@@ -1,6 +1,5 @@
 use std::{mem::size_of, sync::{
-    atomic::{AtomicBool, AtomicPtr},
-    OnceLock,
+    atomic::{AtomicBool, AtomicPtr}, Arc, OnceLock
 }};
 
 use crate::{
@@ -27,6 +26,6 @@ pub static SETTINGS: OnceLock<Settings> = OnceLock::new();
 pub static NSE_HEADER_SIZE: usize = size_of::<BcastHeaders>();
 
 lazy_static! {
-    pub static ref TOKEN_WISE_MAP: SafeHashMap<usize, AtomicPtr<Packet>> = SafeHashMap::new();
+    pub static ref TOKEN_WISE_MAP: SafeHashMap<usize, Arc<AtomicPtr<Packet>>> = SafeHashMap::new();
     pub static ref OUTPUT: Output = Output::new();
 }
