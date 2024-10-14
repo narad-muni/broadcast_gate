@@ -42,19 +42,18 @@ impl ThreadPoolMaster {
 }
 
 pub fn work_on_map(work: Work) {
-    let atomic_ptr = TOKEN_WISE_MAP.get(&work.work_type.get_id()).unwrap();
+    let map = TOKEN_WISE_MAP.read();
+    let atomic_ptr = map.get(&work.work_type.get_id()).unwrap();
 
     let old_packet_ptr = atomic_ptr.swap(ptr::null_mut(), Ordering::SeqCst);
-    unsafe {
-        // Creating box from raw ptr is unsafe, because it could be null
-        // however, we only ensure that this value is not null
-        let mut old_packet = Box::from_raw(old_packet_ptr);
+    // Creating box from raw ptr is unsafe, because it could be null
+    // however, we only ensure that this value is not null
+    let mut old_packet = unsafe {Box::from_raw(old_packet_ptr)};
 
-        // Call associated function
-        (work.processing_fn)(&mut *old_packet);
+    // Call associated function
+    (work.processing_fn)(&mut *old_packet);
 
-        OUTPUT.write(&old_packet);
-    }
+    OUTPUT.write(&old_packet);
 }
 
 pub fn work_on_queue(work: Work) {

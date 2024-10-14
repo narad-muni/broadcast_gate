@@ -1,19 +1,15 @@
 use std::{
-    alloc::{dealloc, Layout}, sync::atomic::{AtomicPtr, Ordering}, thread::{self, JoinHandle}, time::Duration
+    alloc::{dealloc, Layout}, sync::atomic::{AtomicPtr, Ordering}, thread::{self, JoinHandle}
 };
 
 use crate::{
-    global::{INPUT_QUEUE, TOKEN_WISE_MAP, TPOOL_QUEUE, WORK_LOCKS, WORK_QUEUES},
-    settings,
-    types::{
+    global::{INPUT_QUEUE, TOKEN_WISE_MAP, TPOOL_QUEUE, WORK_LOCKS, WORK_QUEUES}, settings, types::{
         packet::Packet,
         settings::Exchange,
         work::{Work, WorkType},
-    },
-    utils::byte_utils::bytes_to_struct,
-    workers::{
+    }, utils::byte_utils::bytes_to_struct, workers::{
         get_bse_processing_fn, get_ncd_processing_fn, get_neq_processing_fn, get_nfo_processing_fn,
-    },
+    }
 };
 
 pub struct Distributor {}
@@ -148,7 +144,8 @@ impl Distributor {
     pub fn distribute_to_map(packet: Packet, work: Work) {
         let new_packet_ptr = Box::into_raw(Box::new(packet));
 
-        let atomic_ptr = TOKEN_WISE_MAP.get(&work.work_type.get_id());
+        let map = TOKEN_WISE_MAP.read();
+        let atomic_ptr = map.get(&work.work_type.get_id());
 
         if let Some(atomic_ptr) = atomic_ptr {
             // If value exists
@@ -168,6 +165,10 @@ impl Distributor {
                 }
             }
         } else {
+
+            // Drop read lock
+            drop(map);
+
             let atomic_ptr = AtomicPtr::new(new_packet_ptr);
 
             TOKEN_WISE_MAP.insert(work.work_type.get_id(), atomic_ptr);
