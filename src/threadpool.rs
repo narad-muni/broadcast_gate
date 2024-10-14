@@ -46,6 +46,11 @@ pub fn work_on_map(work: Work) {
     let atomic_ptr = map.get(&work.work_type.get_id()).unwrap();
 
     let old_packet_ptr = atomic_ptr.swap(ptr::null_mut(), Ordering::SeqCst);
+
+    // Drop map early
+    // because it is no longer needed
+    drop(map);
+
     // Creating box from raw ptr is unsafe, because it could be null
     // however, we only ensure that this value is not null
     let mut old_packet = unsafe {Box::from_raw(old_packet_ptr)};

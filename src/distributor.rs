@@ -152,6 +152,10 @@ impl Distributor {
             // retreive old packet by swaping with new value
             let old_packet_ptr = atomic_ptr.swap(new_packet_ptr, Ordering::SeqCst);
 
+            // Drop map early
+            // because it is no longer needed
+            drop(map);
+
             // If old packet ptr was set to null
             // create new work
             if old_packet_ptr.is_null() {
