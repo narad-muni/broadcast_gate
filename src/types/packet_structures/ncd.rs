@@ -12,6 +12,7 @@ use super::nfo::{
     BcastTickerTradeData, BcastVCTMessages,
 };
 
+#[derive(Debug, Twiddle)]
 pub enum NcdBroadcastTransactionMapping {
     BcastContMsg(BcastContMsg),
     BcastSecurityOpenPrice(BcastSecurityOpenMessage),
@@ -88,43 +89,6 @@ pub fn build_ncd_struct(transaction_id: i16, buf: &[u8]) -> Option<NcdBroadcastT
 }
 
 impl NcdBroadcastTransactionMapping {
-    pub fn twiddle(&mut self) {
-        match self {
-            NcdBroadcastTransactionMapping::BcastContMsg(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastSecurityOpenPrice(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastJrnlVctMsg(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastAssetUpdtIntRateChg(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastOpenMessage(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastCloseMessage(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastPostcloseMsg(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastPreopenShutdownMsg(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastNormalMktPreopenEnded(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastCircuitCheck(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastMktMvmtCmOiIn(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastMboMbpUpdate(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastMwRoundRobin(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastTickerAndMktIndex(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastIndustryIndexUpdate(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastSystemInformationOut(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastOnlyMbp(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastSpdMbpDelta(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastCurrencyAssets(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastInterestAssets(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastQtyMbaDelta(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastPriceMbaDelta(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastTradeExecutionRange(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastSecurityMstrChg(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastSecMstrChngPeriodic(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastPartMstrChg(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastSecurityStatusChgPreopen(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastSecurityStatusChg(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastInstrMstrChg(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastSpdMstrChgPeriodic(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastTurnoverExceeded(s) => s.twiddle(),
-            NcdBroadcastTransactionMapping::BcastBrokerReactivated(s) => s.twiddle(),
-        };
-    }
-
     pub fn to_bytes(&self, buffer: &mut [u8]) {
         match self {
             NcdBroadcastTransactionMapping::BcastContMsg(s) => struct_to_bytes(s, buffer),

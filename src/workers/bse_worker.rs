@@ -776,7 +776,7 @@ pub fn process_bse_uncompressed(packet: &mut Packet) {
     let mut bse_struct = build_bse_struct(trans_code as i16, &packet.0);
     bse_struct.twiddle();
 
-    struct_to_bytes(&bse_struct, &mut packet.0);
+    bse_struct.to_bytes(&mut packet.0);
 }
 
 pub fn decompress_field(base_value: i32, buf: &[u8], offset: &mut usize) -> i32 {

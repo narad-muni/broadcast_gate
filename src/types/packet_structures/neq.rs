@@ -6,7 +6,7 @@ use crate::{
 };
 use twiddler::Twiddle;
 
-#[derive(Debug)]
+#[derive(Debug, Twiddle)]
 pub enum NeqBroadcastTransactionMapping {
     BcastContMsg(BcastContMsg),
     BcastJrnlVctMsg(BcastJournalMessage),
@@ -88,41 +88,6 @@ pub fn build_neq_struct(transaction_id: i16, buf: &[u8]) -> Option<NeqBroadcastT
 }
 
 impl NeqBroadcastTransactionMapping {
-    pub fn twiddle(&mut self) {
-        match self {
-            NeqBroadcastTransactionMapping::BcastContMsg(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastJrnlVctMsg(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastOpenMessage(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastCloseMessage(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastPreopenShutdownMsg(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastNormalMktPreopenEnded(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastAuctionStatusChange(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastMboMbpCedtc(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastMwRoundRobinCedtc(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastTickerAndMktIndex(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastSystemInformationOut(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastOnlyMbpCedtc(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastCallAuctionOrdCxlUpdate(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastCallAuctionMbpCedtc(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastCaMwCedtc(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastIndices(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastIndicesVix(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastPartMstrChg(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastSymbolStatusChangeAction(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastIndicativeIndices(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastTurnoverExceeded(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastBrokerReactivated(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastMarketStatsReportDataCedtcH(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastMarketStatsReportDataCedtcR(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastAuctionInquiryOut(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastSecurityStatusChg(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastSecurityStatusChgPreopen(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastOnlyMbp(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastBuyBack(s) => s.twiddle(),
-            NeqBroadcastTransactionMapping::BcastSecurityMstrChg(s) => s.twiddle(),
-        }
-    }
-
     pub fn to_bytes(&self, buffer: &mut [u8]) {
         match self {
             NeqBroadcastTransactionMapping::BcastContMsg(s) => struct_to_bytes(s, buffer),

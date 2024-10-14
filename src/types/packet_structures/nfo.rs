@@ -4,7 +4,7 @@ use crate::{
 };
 use twiddler::Twiddle;
 
-#[derive(Debug)]
+#[derive(Debug, Twiddle)]
 pub enum NfoBroadcastTransactionMapping {
     BcastContMsg(BcastContMsg),
     BcastSecurityOpenPrice(BcastSecurityOpenMessage),
@@ -76,44 +76,6 @@ pub fn build_nfo_struct(transaction_id: i16, buf: &[u8]) -> Option<NfoBroadcastT
 }
 
 impl NfoBroadcastTransactionMapping {
-    pub fn twiddle(&mut self) {
-        match self {
-            NfoBroadcastTransactionMapping::BcastContMsg(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastSecurityOpenPrice(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastJrnlVctMsg(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastAssetUpdtIntRateChg(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastOpenMessage(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastCloseMessage(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastPostcloseMsg(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastPreopenShutdownMsg(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastNormalMktPreopenEnded(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastCircuitCheck(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastMktMvmtCmOiIn(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastMboMbpUpdate(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastMwRoundRobin(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastTickerAndMktIndex(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastIndustryIndexUpdate(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastSystemInformationOut(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastOnlyMbp(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastSpdMbpDelta(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastCurrencyAssets(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastInterestAssets(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastQtyMbaDelta(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastPriceMbaDelta(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastTradeExecutionRange(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastSecurityMstrChg(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastSecMstrChngPeriodic(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastPartMstrChg(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastSecurityStatusChgPreopen(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastSecurityStatusChg(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastInstrMstrChg(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastSpdMstrChgPeriodic(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastTurnoverExceeded(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastBrokerReactivated(s) => s.twiddle(),
-            NfoBroadcastTransactionMapping::BcastLimitPriceProtectionRange(s) => s.twiddle(),
-        }
-    }
-
     pub fn to_bytes(&self, buffer: &mut [u8]) {
         match self {
             NfoBroadcastTransactionMapping::BcastContMsg(s) => struct_to_bytes(s, buffer),

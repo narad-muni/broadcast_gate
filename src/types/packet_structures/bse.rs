@@ -1,6 +1,7 @@
-use crate::{constants::*, utils::byte_utils::bytes_to_struct};
+use crate::{constants::*, utils::byte_utils::{bytes_to_struct, struct_to_bytes}};
 use twiddler::Twiddle;
 
+#[derive(Debug, Twiddle)]
 pub enum BseBroadcastTransactionMapping {
     BcastTimeMessage(BcastTimeMessage),
     BcastSessionChange(BcastSessionChange),
@@ -49,27 +50,27 @@ pub fn build_bse_struct(transaction_id: i16, buf: &[u8]) -> BseBroadcastTransact
 }
 
 impl BseBroadcastTransactionMapping {
-    pub fn twiddle(&mut self) {
+    pub fn to_bytes(&self, buf: &mut [u8]) {
         match self {
-            BseBroadcastTransactionMapping::BcastTimeMessage(s) => s.twiddle(),
-            BseBroadcastTransactionMapping::BcastSessionChange(s) => s.twiddle(),
-            BseBroadcastTransactionMapping::BcastAuctoinSessionChange(s) => s.twiddle(),
-            BseBroadcastTransactionMapping::BcastNewsHeadline(s) => s.twiddle(),
-            BseBroadcastTransactionMapping::BcastIndex1(s) => s.twiddle(),
-            BseBroadcastTransactionMapping::BcastIndex2(s) => s.twiddle(),
-            BseBroadcastTransactionMapping::BcastClosePrice(s) => s.twiddle(),
-            BseBroadcastTransactionMapping::BcastOpenInterestMsg(s) => s.twiddle(),
-            BseBroadcastTransactionMapping::BcastVarPercentage(s) => s.twiddle(),
-            BseBroadcastTransactionMapping::BcastAuctionMbp(s) => s.twiddle(),
-            BseBroadcastTransactionMapping::BcastMbp(s) => s.twiddle(),
-            BseBroadcastTransactionMapping::BcastMbpComplexInst(s) => s.twiddle(),
-            BseBroadcastTransactionMapping::BcastRbiRefRate(s) => s.twiddle(),
-            BseBroadcastTransactionMapping::BcastOddLotMbp(s) => s.twiddle(),
-            BseBroadcastTransactionMapping::BcastImpliedVolatility(s) => s.twiddle(),
-            BseBroadcastTransactionMapping::BcastKeepAlive(s) => s.twiddle(),
-            BseBroadcastTransactionMapping::BcastDebtMbp(s) => s.twiddle(),
-            BseBroadcastTransactionMapping::BcastLppRange(s) => s.twiddle(),
-            BseBroadcastTransactionMapping::BcastCallAuctionCxlQtyMsg(s) => s.twiddle(),
+            BseBroadcastTransactionMapping::BcastTimeMessage(s) => struct_to_bytes(&s, buf),
+            BseBroadcastTransactionMapping::BcastSessionChange(s) => struct_to_bytes(&s, buf),
+            BseBroadcastTransactionMapping::BcastAuctoinSessionChange(s) => struct_to_bytes(&s, buf),
+            BseBroadcastTransactionMapping::BcastNewsHeadline(s) => struct_to_bytes(&s, buf),
+            BseBroadcastTransactionMapping::BcastIndex1(s) => struct_to_bytes(&s, buf),
+            BseBroadcastTransactionMapping::BcastIndex2(s) => struct_to_bytes(&s, buf),
+            BseBroadcastTransactionMapping::BcastClosePrice(s) => struct_to_bytes(&s, buf),
+            BseBroadcastTransactionMapping::BcastOpenInterestMsg(s) => struct_to_bytes(&s, buf),
+            BseBroadcastTransactionMapping::BcastVarPercentage(s) => struct_to_bytes(&s, buf),
+            BseBroadcastTransactionMapping::BcastAuctionMbp(s) => struct_to_bytes(&s, buf),
+            BseBroadcastTransactionMapping::BcastMbp(s) => struct_to_bytes(&s, buf),
+            BseBroadcastTransactionMapping::BcastMbpComplexInst(s) => struct_to_bytes(&s, buf),
+            BseBroadcastTransactionMapping::BcastRbiRefRate(s) => struct_to_bytes(&s, buf),
+            BseBroadcastTransactionMapping::BcastOddLotMbp(s) => struct_to_bytes(&s, buf),
+            BseBroadcastTransactionMapping::BcastImpliedVolatility(s) => struct_to_bytes(&s, buf),
+            BseBroadcastTransactionMapping::BcastKeepAlive(s) => struct_to_bytes(&s, buf),
+            BseBroadcastTransactionMapping::BcastDebtMbp(s) => struct_to_bytes(&s, buf),
+            BseBroadcastTransactionMapping::BcastLppRange(s) => struct_to_bytes(&s, buf),
+            BseBroadcastTransactionMapping::BcastCallAuctionCxlQtyMsg(s) => struct_to_bytes(&s, buf),
         }
     }
 }
