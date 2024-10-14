@@ -146,31 +146,31 @@ impl Distributor {
     }
 
     pub fn distribute_to_map(packet: Packet, work: Work) {
-        let boxed = Box::into_raw(Box::new(packet));
+        let new_packet_ptr = Box::into_raw(Box::new(packet));
 
-        let value = TOKEN_WISE_MAP.get(&work.work_type.get_id());
+        let atomic_ptr = TOKEN_WISE_MAP.get(&work.work_type.get_id());
 
-        if let Some(packet_ptr) = value {
+        if let Some(atomic_ptr) = atomic_ptr {
             // If value exists
             // retreive old packet by swaping with new value
-            let old_packet = packet_ptr.swap(boxed, Ordering::SeqCst);
+            let old_packet_ptr = atomic_ptr.swap(new_packet_ptr, Ordering::SeqCst);
 
             // If old packet ptr was set to null
             // create new work
-            if old_packet.is_null() {
+            if old_packet_ptr.is_null() {
                 TPOOL_QUEUE.push(work);
-            } else if !old_packet.is_null() {
+            } else {
                 // If old packet was not null
                 // means it is still allocated in heap
                 // manually create box from it and drop
                 unsafe {
-                    dealloc(old_packet as *mut u8, Layout::new::<Packet>());
+                    dealloc(old_packet_ptr as *mut u8, Layout::new::<Packet>());
                 }
             }
         } else {
-            let packet_ptr = AtomicPtr::new(boxed);
+            let atomic_ptr = AtomicPtr::new(new_packet_ptr);
 
-            TOKEN_WISE_MAP.insert(work.work_type.get_id(), packet_ptr);
+            TOKEN_WISE_MAP.insert(work.work_type.get_id(), atomic_ptr);
 
             TPOOL_QUEUE.push(work);
         }
