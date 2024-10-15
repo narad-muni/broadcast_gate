@@ -1,11 +1,14 @@
+use std::sync::{atomic::AtomicPtr, Arc};
+
 use super::packet::Packet;
 
 pub type ProcessingFn = fn(&mut Packet);
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug)]
 pub struct Work {
     pub work_type: WorkType,
     pub processing_fn: ProcessingFn,
+    pub atomic_ptr: Option<Arc<AtomicPtr<Packet>>>
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]

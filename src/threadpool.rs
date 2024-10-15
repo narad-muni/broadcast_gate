@@ -7,7 +7,7 @@ use std::{
 use threadpool::ThreadPool;
 
 use crate::{
-    global::{OUTPUT, TOKEN_WISE_MAP, TPOOL_QUEUE, WORK_LOCKS, WORK_QUEUES},
+    global::{OUTPUT, TPOOL_QUEUE, WORK_LOCKS, WORK_QUEUES},
     types::work::{Work, WorkType},
 };
 
@@ -42,14 +42,12 @@ impl ThreadPoolMaster {
 }
 
 pub fn work_on_map(work: Work) {
-    let map = TOKEN_WISE_MAP.read();
-    let atomic_ptr = map.get(&work.work_type.get_id()).unwrap();
+    // We assume that work.atomic_ptr is not null
+    let atomic_ptr = unsafe {
+        work.atomic_ptr.unwrap_unchecked()
+    };
 
     let old_packet_ptr = atomic_ptr.swap(ptr::null_mut(), Ordering::SeqCst);
-
-    // Drop map early
-    // because it is no longer needed
-    drop(map);
 
     // Creating box from raw ptr is unsafe, because it could be null
     // however, we only ensure that this value is not null

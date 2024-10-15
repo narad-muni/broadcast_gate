@@ -1,5 +1,5 @@
 use std::{
-    alloc::{dealloc, Layout}, sync::atomic::{AtomicPtr, Ordering}, thread::{self, JoinHandle}
+    alloc::{dealloc, Layout}, sync::{atomic::{AtomicPtr, Ordering}, Arc}, thread::{self, JoinHandle}
 };
 
 use crate::{
@@ -49,6 +49,7 @@ impl Distributor {
             let work = Work {
                 work_type,
                 processing_fn,
+                atomic_ptr: None,
             };
 
             if let WorkType::TokenWise(_) = work_type {
@@ -71,6 +72,7 @@ impl Distributor {
             let work = Work {
                 work_type,
                 processing_fn,
+                atomic_ptr: None,
             };
 
             if let WorkType::TokenWise(_) = work_type {
@@ -93,6 +95,7 @@ impl Distributor {
             let work = Work {
                 work_type,
                 processing_fn,
+                atomic_ptr: None,
             };
 
             if let WorkType::TokenWise(_) = work_type {
@@ -119,6 +122,7 @@ impl Distributor {
         let work = Work {
             work_type,
             processing_fn,
+            atomic_ptr: None,
         };
 
         Distributor::distribute_to_queue(packet, work);
@@ -141,20 +145,16 @@ impl Distributor {
         }
     }
 
-    pub fn distribute_to_map(packet: Packet, work: Work) {
+    pub fn distribute_to_map(packet: Packet, mut work: Work) {
         let new_packet_ptr = Box::into_raw(Box::new(packet));
 
-        let map = TOKEN_WISE_MAP.read();
-        let atomic_ptr = map.get(&work.work_type.get_id());
+        let atomic_ptr = TOKEN_WISE_MAP.get(&work.work_type.get_id());
 
         if let Some(atomic_ptr) = atomic_ptr {
+            work.atomic_ptr = Some(atomic_ptr.clone());
             // If value exists
             // retreive old packet by swaping with new value
             let old_packet_ptr = atomic_ptr.swap(new_packet_ptr, Ordering::SeqCst);
-
-            // Drop map early
-            // because it is no longer needed
-            drop(map);
 
             // If old packet ptr was set to null
             // create new work
@@ -169,13 +169,11 @@ impl Distributor {
                 }
             }
         } else {
-
-            // Drop read lock
-            drop(map);
-
-            let atomic_ptr = AtomicPtr::new(new_packet_ptr);
+            let atomic_ptr = Arc::new(AtomicPtr::new(new_packet_ptr));
+            work.atomic_ptr = Some(atomic_ptr.clone());
 
             TOKEN_WISE_MAP.insert(work.work_type.get_id(), atomic_ptr);
+
 
             TPOOL_QUEUE.push(work);
         }
