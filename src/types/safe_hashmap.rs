@@ -2,14 +2,14 @@ use std::{
     cell::UnsafeCell, collections::HashMap, hash::Hash
 };
 
-pub struct SafeHashMap<K, V> {
+pub struct UnsafeHashMap<K, V> {
     pub map: UnsafeCell<HashMap<K, V>>,
 }
 
-unsafe impl<K, V> Send for SafeHashMap<K, V> {}
-unsafe impl<K, V> Sync for SafeHashMap<K, V> {}
+unsafe impl<K, V> Send for UnsafeHashMap<K, V> {}
+unsafe impl<K, V> Sync for UnsafeHashMap<K, V> {}
 
-impl<K, V> SafeHashMap<K, V>
+impl<K, V> UnsafeHashMap<K, V>
 where
     K: Eq + Hash,
 {

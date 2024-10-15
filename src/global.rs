@@ -4,7 +4,7 @@ use std::{mem::size_of, sync::{
 
 use crate::{
     create_array, output::Output, types::{
-        packet::Packet, packet_structures::neq::BcastHeaders, safe_hashmap::SafeHashMap,
+        packet::Packet, packet_structures::neq::BcastHeaders, safe_hashmap::UnsafeHashMap,
         settings::{Exchange, Settings}, work::Work,
     }
 };
@@ -26,6 +26,6 @@ pub static SETTINGS: OnceLock<Settings> = OnceLock::new();
 pub static NSE_HEADER_SIZE: usize = size_of::<BcastHeaders>();
 
 lazy_static! {
-    pub static ref TOKEN_WISE_MAP: SafeHashMap<usize, Arc<AtomicPtr<Packet>>> = SafeHashMap::new();
+    pub static ref TOKEN_WISE_MAP: UnsafeHashMap<usize, Arc<AtomicPtr<Packet>>> = UnsafeHashMap::new();
     pub static ref OUTPUT: Output = Output::new();
 }
