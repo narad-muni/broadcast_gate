@@ -12,16 +12,19 @@ pub enum NeqBroadcastTransactionMapping {
     BcastJrnlVctMsg(BcastJournalMessage),
     BcastOpenMessage(BcastVCTMessages),
     BcastCloseMessage(BcastVCTMessages),
+    BcastCircuitCheck(BcastHeaders),
     BcastPreopenShutdownMsg(BcastVCTMessages),
     BcastNormalMktPreopenEnded(BcastVCTMessages),
     BcastAuctionStatusChange(BcastAuctionStatusChange),
     BcastMboMbpCedtc(BcastMBOMBP),
-    BcastMwRoundRobinCedtc(BcastInquiryResponse),
+    BcastMwRoundRobin(BcastInquiryResponse),
+    BcastMwRoundRobinCedtc(BcastInquiryResponseCedtc),
     BcastTickerAndMktIndex(BcastTickerTradeData),
     BcastSystemInformationOut(BcastSystemInfoData),
     BcastOnlyMbpCedtc(BcastOnlyMBPCEDTC),
     BcastCallAuctionOrdCxlUpdate(BcastCAOrdCxUpdate),
     BcastCallAuctionMbpCedtc(BcastCallAuctionMBP),
+    BcastCallAuctionMbp(BcastCallAuctionMBPCedtc),
     BcastCaMwCedtc(BcastCallAuctionMW),
     BcastIndices(BcastIndices),
     BcastIndicesVix(BcastIndices),
@@ -47,6 +50,7 @@ pub fn build_neq_struct(transaction_id: i16, buf: &[u8]) -> Option<NeqBroadcastT
         6511 => Some(NeqBroadcastTransactionMapping::BcastOpenMessage(bytes_to_struct(buf))),
         6521 => Some(NeqBroadcastTransactionMapping::BcastCloseMessage(bytes_to_struct(buf))),
         6531 => Some(NeqBroadcastTransactionMapping::BcastPreopenShutdownMsg(bytes_to_struct(buf))),
+        6541 => Some(NeqBroadcastTransactionMapping::BcastCircuitCheck(bytes_to_struct(buf))),
         6571 => Some(NeqBroadcastTransactionMapping::BcastNormalMktPreopenEnded(bytes_to_struct(buf))),
         6581 => Some(NeqBroadcastTransactionMapping::BcastAuctionStatusChange(bytes_to_struct(buf))),
         7200 => Some(NeqBroadcastTransactionMapping::BcastMboMbpCedtc(bytes_to_struct(buf))),
@@ -77,11 +81,13 @@ pub fn build_neq_struct(transaction_id: i16, buf: &[u8]) -> Option<NeqBroadcastT
         }),
         18700 => Some(NeqBroadcastTransactionMapping::BcastAuctionInquiryOut(bytes_to_struct(buf))),
         18703 => Some(NeqBroadcastTransactionMapping::BcastTickerAndMktIndex(bytes_to_struct(buf))),
+        18702 => Some(NeqBroadcastTransactionMapping::BcastMwRoundRobin(bytes_to_struct(buf))),
         18705 => Some(NeqBroadcastTransactionMapping::BcastOnlyMbp(bytes_to_struct(buf))),
         18707 => Some({
             NeqBroadcastTransactionMapping::BcastSecurityStatusChgPreopen(bytes_to_struct(buf))
         }),
         18708 => Some(NeqBroadcastTransactionMapping::BcastBuyBack(bytes_to_struct(buf))),
+        18710 => Some(NeqBroadcastTransactionMapping::BcastCallAuctionMbp(bytes_to_struct(buf))),
         18720 => Some(NeqBroadcastTransactionMapping::BcastSecurityMstrChg(bytes_to_struct(buf))),
         _ => None,
     }
@@ -96,7 +102,8 @@ impl NeqBroadcastTransactionMapping {
             NeqBroadcastTransactionMapping::BcastCloseMessage(s) => struct_to_bytes(s, buffer),
             NeqBroadcastTransactionMapping::BcastPreopenShutdownMsg(s) => {
                 struct_to_bytes(s, buffer)
-            }
+            },
+            NeqBroadcastTransactionMapping::BcastCircuitCheck(s) => struct_to_bytes(s, buffer),
             NeqBroadcastTransactionMapping::BcastNormalMktPreopenEnded(s) => {
                 struct_to_bytes(s, buffer)
             }
@@ -105,6 +112,7 @@ impl NeqBroadcastTransactionMapping {
             }
             NeqBroadcastTransactionMapping::BcastMboMbpCedtc(s) => struct_to_bytes(s, buffer),
             NeqBroadcastTransactionMapping::BcastMwRoundRobinCedtc(s) => struct_to_bytes(s, buffer),
+            NeqBroadcastTransactionMapping::BcastMwRoundRobin(s) => struct_to_bytes(s, buffer),
             NeqBroadcastTransactionMapping::BcastTickerAndMktIndex(s) => struct_to_bytes(s, buffer),
             NeqBroadcastTransactionMapping::BcastSystemInformationOut(s) => {
                 struct_to_bytes(s, buffer)
@@ -139,6 +147,7 @@ impl NeqBroadcastTransactionMapping {
             }
             NeqBroadcastTransactionMapping::BcastOnlyMbp(s) => struct_to_bytes(s, buffer),
             NeqBroadcastTransactionMapping::BcastBuyBack(s) => struct_to_bytes(s, buffer),
+            NeqBroadcastTransactionMapping::BcastCallAuctionMbp(s) => struct_to_bytes(s, buffer),
             NeqBroadcastTransactionMapping::BcastSecurityMstrChg(s) => struct_to_bytes(s, buffer),
         }
     }
@@ -591,6 +600,18 @@ pub struct BcastOnlyMBPCEDTC {
 #[repr(C, packed(2))]
 pub struct BcastMarketWiseInfo {
     mbombp_indicator: BcastMBOMBPIndicator,
+    buy_volume: i32,
+    buy_price: i32,
+    ell_volume: i32,
+    ell_price: i32,
+    last_trade_price: i32,
+    last_trade_time: i32,
+}
+
+#[derive(Debug, Twiddle, Clone, Copy)]
+#[repr(C, packed(2))]
+pub struct BcastMarketWiseInfoCedtc {
+    mbombp_indicator: BcastMBOMBPIndicator,
     buy_volume: i64,
     buy_price: i32,
     ell_volume: i64,
@@ -608,6 +629,13 @@ pub struct BcastMarketWatch {
 
 #[derive(Debug, Twiddle, Clone, Copy)]
 #[repr(C, packed(2))]
+pub struct BcastMarketWatchCedtc {
+    token: i32,
+    market_wise_info: [BcastMarketWiseInfoCedtc; MAX_MARKET_WISE_INFO_IDX],
+}
+
+#[derive(Debug, Twiddle, Clone, Copy)]
+#[repr(C, packed(2))]
 pub struct BcastInquiryResponse {
     bcast_header: BcastHeaders,
     number_of_records: i16,
@@ -616,7 +644,43 @@ pub struct BcastInquiryResponse {
 
 #[derive(Debug, Twiddle, Clone, Copy)]
 #[repr(C, packed(2))]
+pub struct BcastInquiryResponseCedtc {
+    bcast_header: BcastHeaders,
+    number_of_records: i16,
+    market_watch: [BcastMarketWatchCedtc; MAX_MARKET_WATCH_IDX - 1],
+}
+
+#[derive(Debug, Twiddle, Clone, Copy)]
+#[repr(C, packed(2))]
 pub struct BcastCallAuctionMBPData {
+    token: i32,
+    book_type: i16,
+    trading_status: i16,
+    volume_traded_today: i32,
+    indicative_traded_qty: i32,
+    last_traded_price: i32,
+    net_change_indicator: u8,
+    filler: u8,
+    net_price_change_from_closing_price: i32,
+    last_trade_quantity: i32,
+    last_trade_time: i32,
+    average_trade_price: i32,
+    first_open_price: i32,
+    mbp_info: [BcastMBPInfo; MAX_MBPINFO_IDX],
+    bb_total_buy_flag: i16,
+    bb_total_sell_flag: i16,
+    total_buy_quantity: f64,
+    total_sell_quantity: f64,
+    mbp_indicator: BcastMBPIndicator,
+    closing_price: i32,
+    open_price: i32,
+    high_price: i32,
+    low_price: i32,
+}
+
+#[derive(Debug, Twiddle, Clone, Copy)]
+#[repr(C, packed(2))]
+pub struct BcastCallAuctionMBPDataCedtc {
     token: i32,
     book_type: i16,
     trading_status: i16,
@@ -648,6 +712,14 @@ pub struct BcastCallAuctionMBP {
     bcast_header: BcastHeaders,
     number_of_records: i16,
     call_auction_mbp_data: [BcastCallAuctionMBPData; MAX_CA_MBP_DATA_IDX],
+}
+
+#[derive(Debug, Twiddle, Clone, Copy)]
+#[repr(C, packed(2))]
+pub struct BcastCallAuctionMBPCedtc {
+    bcast_header: BcastHeaders,
+    number_of_records: i16,
+    call_auction_mbp_data: [BcastCallAuctionMBPDataCedtc; MAX_CA_MBP_DATA_IDX],
 }
 
 #[derive(Debug, Twiddle, Clone, Copy)]
