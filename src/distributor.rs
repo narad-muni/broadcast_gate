@@ -3,7 +3,7 @@ use std::{
 };
 
 use crate::{
-    global::{INPUT_QUEUE, TOKEN_WISE_MAP, TPOOL_QUEUE, WORK_LOCKS, WORK_QUEUES}, settings, types::{
+    global::{INPUT_QUEUE, STATISTICS, TOKEN_WISE_MAP, TPOOL_QUEUE, WORK_LOCKS, WORK_QUEUES}, settings, types::{
         packet::Packet,
         settings::Exchange,
         work::{Work, WorkType},
@@ -110,6 +110,8 @@ impl Distributor {
         let mut message_code: i32 = bytes_to_struct(&packet.0);
         // Twiddle
         message_code = message_code.to_be();
+
+        STATISTICS.get().other_packets_count += 1;
 
         // Create work
         let work_type = match message_code {

@@ -1,23 +1,23 @@
-use std::{alloc::{dealloc, Layout}, ptr, sync::atomic::{AtomicPtr, Ordering}, thread, time::Duration};
+// use std::{alloc::{dealloc, Layout}, ptr, sync::atomic::{AtomicPtr, Ordering}, thread, time::Duration};
 
-use crossbeam::queue::SegQueue;
-use types::safe_hashmap::SafeHashMap;
+// use crossbeam::queue::SegQueue;
+// use types::safe_hashmap::SafeHashMap;
 
-mod constants;
-mod distributor;
-mod global;
-mod input;
-mod output;
-mod settings;
-mod threadpool;
-mod types;
-mod utils;
-mod workers;
-mod macros;
+// mod constants;
+// mod distributor;
+// mod global;
+// mod input;
+// mod output;
+// mod settings;
+// mod threadpool;
+// mod types;
+// mod utils;
+// mod workers;
+// mod macros;
 
-lazy_static::lazy_static! {
-    static ref MAP: SafeHashMap<i32, AtomicPtr<i32>> = SafeHashMap::new();
-}
+// lazy_static::lazy_static! {
+//     static ref MAP: SafeHashMap<i32, AtomicPtr<i32>> = SafeHashMap::new();
+// }
 
 fn main() {
 

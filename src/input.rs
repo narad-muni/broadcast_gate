@@ -3,7 +3,7 @@ use std::{mem::MaybeUninit, net::Ipv4Addr};
 use socket2::Socket;
 
 use crate::{
-    constants::{BUF_SIZE, UNRECOVERABLE_ERROR_KINDS}, global::INPUT_QUEUE, settings, types::packet::Packet,
+    constants::{BUF_SIZE, UNRECOVERABLE_ERROR_KINDS}, global::{INPUT_QUEUE, STATISTICS}, settings, types::packet::Packet,
     utils::{byte_utils::uninit_to_buf, udp_utils::build_socket},
 };
 
@@ -67,8 +67,11 @@ impl<'a> UdpInput<'a> {
                 Ok((_, addr)) => {
                     // Drop packet if source ip doesn't match
                     if *addr.as_socket_ipv4().unwrap().ip() != self.source_ip {
+                        STATISTICS.get().filtered_packets_count += 1;
                         continue;
                     }
+
+                    STATISTICS.get().udp_packets_count += 1;
                 }
                 Err(e) => {
                     // Check for client side errors

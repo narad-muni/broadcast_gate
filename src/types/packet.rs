@@ -1,8 +1,7 @@
 use std::mem::{offset_of, size_of};
 
 use crate::{
-    constants::{BCAST_MBO_MBP, BCAST_ONLY_MBP, BCAST_ONLY_MBP_EQ, BUF_SIZE, MAX_SUB_PACKETS, SKIP_BYTES},
-    utils::byte_utils::{bytes_to_struct, bytes_to_struct_mut, create_empty}, workers::nse_worker::get_token,
+    constants::{BCAST_MBO_MBP, BCAST_ONLY_MBP, BCAST_ONLY_MBP_EQ, BUF_SIZE, MAX_SUB_PACKETS, SKIP_BYTES}, global::STATISTICS, utils::byte_utils::{bytes_to_struct, bytes_to_struct_mut, create_empty}, workers::nse_worker::get_token
 };
 
 use super::{
@@ -49,6 +48,7 @@ impl Packet {
 
                 packets[packet_idx] = (packet, work_type);
                 packet_idx += 1;
+                STATISTICS.get().other_packets_count += 1;
             } else {
                 // Packet is compressed
 
@@ -119,11 +119,13 @@ impl Packet {
                         // Add packet and increase packet idx
                         packets[packet_idx] = (packet, work_type);
                         packet_idx += 1;
+                        STATISTICS.get().mbo_packets_count += 1;
                     }
                 }
 
                 packets[packet_idx] = (packet, work_type);
                 packet_idx += 1;
+                STATISTICS.get().mbo_packets_count += 1;
             }
         }
 
