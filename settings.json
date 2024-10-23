@@ -10,11 +10,11 @@
   "output_udp_ip": "225.0.0.0",
   "output_udp_port": 7813,
   "thread_count": 4,
-  "steps": 1000,
+  "steps": 100000,
   "kafka_partition_no": 0,
-  "kafka_brokers": "10.6.43.25:9092",
+  "kafka_brokers": "localhost:9092",
   "kafka_topic_name": "rust",
   "kafka_config_path": "kafka_config.json",
-  "output_targets": ["counter"],
+  "output_targets": ["kafka"],
   "source_ip": "172.18.2.223"
 }
