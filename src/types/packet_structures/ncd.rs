@@ -50,41 +50,106 @@ pub enum NcdBroadcastTransactionMapping {
 
 pub fn build_ncd_struct(transaction_id: i16, buf: &[u8]) -> Option<NcdBroadcastTransactionMapping> {
     match transaction_id {
-        5294 => Some(NcdBroadcastTransactionMapping::BcastContMsg(bytes_to_struct(&buf))),
-        6013 => Some(NcdBroadcastTransactionMapping::BcastSecurityOpenPrice(bytes_to_struct(&buf))),
-        6501 => Some(NcdBroadcastTransactionMapping::BcastJrnlVctMsg(bytes_to_struct(&buf))),
-        6503 => Some(NcdBroadcastTransactionMapping::BcastAssetUpdtIntRateChg(bytes_to_struct(&buf))),
-        6511 => Some(NcdBroadcastTransactionMapping::BcastOpenMessage(bytes_to_struct(&buf))),
-        6521 => Some(NcdBroadcastTransactionMapping::BcastCloseMessage(bytes_to_struct(&buf))),
-        6522 => Some(NcdBroadcastTransactionMapping::BcastPostcloseMsg(bytes_to_struct(&buf))),
-        6531 => Some(NcdBroadcastTransactionMapping::BcastPreopenShutdownMsg(bytes_to_struct(&buf))),
-        6541 => Some(NcdBroadcastTransactionMapping::BcastCircuitCheck(bytes_to_struct(&buf))),
-        6571 => Some(NcdBroadcastTransactionMapping::BcastNormalMktPreopenEnded(bytes_to_struct(&buf))),
-        7130 => Some(NcdBroadcastTransactionMapping::BcastMktMvmtCmOiIn(bytes_to_struct(&buf))),
-        7200 => Some(NcdBroadcastTransactionMapping::BcastMboMbpUpdate(bytes_to_struct(&buf))),
-        7201 => Some(NcdBroadcastTransactionMapping::BcastMwRoundRobin(bytes_to_struct(&buf))),
-        7202 => Some(NcdBroadcastTransactionMapping::BcastTickerAndMktIndex(bytes_to_struct(&buf))),
-        7203 => Some(NcdBroadcastTransactionMapping::BcastIndustryIndexUpdate(bytes_to_struct(&buf))),
-        7206 => Some(NcdBroadcastTransactionMapping::BcastSystemInformationOut(bytes_to_struct(&buf))),
-        7208 => Some(NcdBroadcastTransactionMapping::BcastOnlyMbp(bytes_to_struct(&buf))),
+        5294 => Some(NcdBroadcastTransactionMapping::BcastContMsg(
+            bytes_to_struct(&buf),
+        )),
+        6013 => Some(NcdBroadcastTransactionMapping::BcastSecurityOpenPrice(
+            bytes_to_struct(&buf),
+        )),
+        6501 => Some(NcdBroadcastTransactionMapping::BcastJrnlVctMsg(
+            bytes_to_struct(&buf),
+        )),
+        6503 => Some(NcdBroadcastTransactionMapping::BcastAssetUpdtIntRateChg(
+            bytes_to_struct(&buf),
+        )),
+        6511 => Some(NcdBroadcastTransactionMapping::BcastOpenMessage(
+            bytes_to_struct(&buf),
+        )),
+        6521 => Some(NcdBroadcastTransactionMapping::BcastCloseMessage(
+            bytes_to_struct(&buf),
+        )),
+        6522 => Some(NcdBroadcastTransactionMapping::BcastPostcloseMsg(
+            bytes_to_struct(&buf),
+        )),
+        6531 => Some(NcdBroadcastTransactionMapping::BcastPreopenShutdownMsg(
+            bytes_to_struct(&buf),
+        )),
+        6541 => Some(NcdBroadcastTransactionMapping::BcastCircuitCheck(
+            bytes_to_struct(&buf),
+        )),
+        6571 => Some(NcdBroadcastTransactionMapping::BcastNormalMktPreopenEnded(
+            bytes_to_struct(&buf),
+        )),
+        7130 => Some(NcdBroadcastTransactionMapping::BcastMktMvmtCmOiIn(
+            bytes_to_struct(&buf),
+        )),
+        7200 => Some(NcdBroadcastTransactionMapping::BcastMboMbpUpdate(
+            bytes_to_struct(&buf),
+        )),
+        7201 => Some(NcdBroadcastTransactionMapping::BcastMwRoundRobin(
+            bytes_to_struct(&buf),
+        )),
+        7202 => Some(NcdBroadcastTransactionMapping::BcastTickerAndMktIndex(
+            bytes_to_struct(&buf),
+        )),
+        7203 => Some(NcdBroadcastTransactionMapping::BcastIndustryIndexUpdate(
+            bytes_to_struct(&buf),
+        )),
+        7206 => Some(NcdBroadcastTransactionMapping::BcastSystemInformationOut(
+            bytes_to_struct(&buf),
+        )),
+        7208 => Some(NcdBroadcastTransactionMapping::BcastOnlyMbp(
+            bytes_to_struct(&buf),
+        )),
         7210 => Some({
             NcdBroadcastTransactionMapping::BcastSecurityStatusChgPreopen(bytes_to_struct(&buf))
         }),
-        7211 => Some(NcdBroadcastTransactionMapping::BcastSpdMbpDelta(bytes_to_struct(&buf))),
-        7213 => Some(NcdBroadcastTransactionMapping::BcastCurrencyAssets(bytes_to_struct(&buf))),
-        7214 => Some(NcdBroadcastTransactionMapping::BcastInterestAssets(bytes_to_struct(&buf))),
-        7215 => Some(NcdBroadcastTransactionMapping::BcastQtyMbaDelta(bytes_to_struct(&buf))),
-        7216 => Some(NcdBroadcastTransactionMapping::BcastPriceMbaDelta(bytes_to_struct(&buf))),
-        7220 => Some(NcdBroadcastTransactionMapping::BcastTradeExecutionRange(bytes_to_struct(&buf))),
-        7305 => Some(NcdBroadcastTransactionMapping::BcastSecurityMstrChg(bytes_to_struct(&buf))),
-        7306 => Some(NcdBroadcastTransactionMapping::BcastPartMstrChg(bytes_to_struct(&buf))),
-        7320 => Some(NcdBroadcastTransactionMapping::BcastSecurityStatusChg(bytes_to_struct(&buf))),
-        7324 => Some(NcdBroadcastTransactionMapping::BcastInstrMstrChg(bytes_to_struct(&buf))),
-        7340 => Some(NcdBroadcastTransactionMapping::BcastSecMstrChngPeriodic(bytes_to_struct(&buf))),
-        7341 => Some(NcdBroadcastTransactionMapping::BcastSpdMstrChgPeriodic(bytes_to_struct(&buf))),
-        9010 => Some(NcdBroadcastTransactionMapping::BcastTurnoverExceeded(bytes_to_struct(&buf))),
-        9011 => Some(NcdBroadcastTransactionMapping::BcastBrokerReactivated(bytes_to_struct(&buf))),
-        _ => {println!("Invalid ncd transaction id: {}", transaction_id); None},
+        7211 => Some(NcdBroadcastTransactionMapping::BcastSpdMbpDelta(
+            bytes_to_struct(&buf),
+        )),
+        7213 => Some(NcdBroadcastTransactionMapping::BcastCurrencyAssets(
+            bytes_to_struct(&buf),
+        )),
+        7214 => Some(NcdBroadcastTransactionMapping::BcastInterestAssets(
+            bytes_to_struct(&buf),
+        )),
+        7215 => Some(NcdBroadcastTransactionMapping::BcastQtyMbaDelta(
+            bytes_to_struct(&buf),
+        )),
+        7216 => Some(NcdBroadcastTransactionMapping::BcastPriceMbaDelta(
+            bytes_to_struct(&buf),
+        )),
+        7220 => Some(NcdBroadcastTransactionMapping::BcastTradeExecutionRange(
+            bytes_to_struct(&buf),
+        )),
+        7305 => Some(NcdBroadcastTransactionMapping::BcastSecurityMstrChg(
+            bytes_to_struct(&buf),
+        )),
+        7306 => Some(NcdBroadcastTransactionMapping::BcastPartMstrChg(
+            bytes_to_struct(&buf),
+        )),
+        7320 => Some(NcdBroadcastTransactionMapping::BcastSecurityStatusChg(
+            bytes_to_struct(&buf),
+        )),
+        7324 => Some(NcdBroadcastTransactionMapping::BcastInstrMstrChg(
+            bytes_to_struct(&buf),
+        )),
+        7340 => Some(NcdBroadcastTransactionMapping::BcastSecMstrChngPeriodic(
+            bytes_to_struct(&buf),
+        )),
+        7341 => Some(NcdBroadcastTransactionMapping::BcastSpdMstrChgPeriodic(
+            bytes_to_struct(&buf),
+        )),
+        9010 => Some(NcdBroadcastTransactionMapping::BcastTurnoverExceeded(
+            bytes_to_struct(&buf),
+        )),
+        9011 => Some(NcdBroadcastTransactionMapping::BcastBrokerReactivated(
+            bytes_to_struct(&buf),
+        )),
+        _ => {
+            println!("Invalid ncd transaction id: {}", transaction_id);
+            None
+        }
     }
 }
 

@@ -43,35 +43,88 @@ pub enum NfoBroadcastTransactionMapping {
 
 pub fn build_nfo_struct(transaction_id: i16, buf: &[u8]) -> Option<NfoBroadcastTransactionMapping> {
     match transaction_id {
-        5294 => Some(NfoBroadcastTransactionMapping::BcastContMsg(bytes_to_struct(buf))),
-        6013 => Some(NfoBroadcastTransactionMapping::BcastSecurityOpenPrice(bytes_to_struct(buf))),
-        6501 => Some(NfoBroadcastTransactionMapping::BcastJrnlVctMsg(bytes_to_struct(buf))),
-        6511 => Some(NfoBroadcastTransactionMapping::BcastOpenMessage(bytes_to_struct(buf))),
-        6521 => Some(NfoBroadcastTransactionMapping::BcastCloseMessage(bytes_to_struct(buf))),
-        6531 => Some(NfoBroadcastTransactionMapping::BcastPreopenShutdownMsg(bytes_to_struct(buf))),
-        6541 => Some(NfoBroadcastTransactionMapping::BcastCircuitCheck(bytes_to_struct(buf))),
-        6571 => Some(NfoBroadcastTransactionMapping::BcastNormalMktPreopenEnded(bytes_to_struct(buf))),
-        7130 => Some(NfoBroadcastTransactionMapping::BcastMktMvmtCmOiIn(bytes_to_struct(buf))),
-        7200 => Some(NfoBroadcastTransactionMapping::BcastMboMbpUpdate(bytes_to_struct(buf))),
-        7201 => Some(NfoBroadcastTransactionMapping::BcastMwRoundRobin(bytes_to_struct(buf))),
-        7202 => Some(NfoBroadcastTransactionMapping::BcastTickerAndMktIndex(bytes_to_struct(buf))),
-        7203 => Some(NfoBroadcastTransactionMapping::BcastIndustryIndexUpdate(bytes_to_struct(buf))),
-        7206 => Some(NfoBroadcastTransactionMapping::BcastSystemInformationOut(bytes_to_struct(buf))),
-        7208 => Some(NfoBroadcastTransactionMapping::BcastOnlyMbp(bytes_to_struct(buf))),
-        7210 => Some(NfoBroadcastTransactionMapping::BcastSecurityStatusChgPreopen(bytes_to_struct(buf))),
-        7211 => Some(NfoBroadcastTransactionMapping::BcastSpdMbpDelta(bytes_to_struct(buf))),
+        5294 => Some(NfoBroadcastTransactionMapping::BcastContMsg(
+            bytes_to_struct(buf),
+        )),
+        6013 => Some(NfoBroadcastTransactionMapping::BcastSecurityOpenPrice(
+            bytes_to_struct(buf),
+        )),
+        6501 => Some(NfoBroadcastTransactionMapping::BcastJrnlVctMsg(
+            bytes_to_struct(buf),
+        )),
+        6511 => Some(NfoBroadcastTransactionMapping::BcastOpenMessage(
+            bytes_to_struct(buf),
+        )),
+        6521 => Some(NfoBroadcastTransactionMapping::BcastCloseMessage(
+            bytes_to_struct(buf),
+        )),
+        6531 => Some(NfoBroadcastTransactionMapping::BcastPreopenShutdownMsg(
+            bytes_to_struct(buf),
+        )),
+        6541 => Some(NfoBroadcastTransactionMapping::BcastCircuitCheck(
+            bytes_to_struct(buf),
+        )),
+        6571 => Some(NfoBroadcastTransactionMapping::BcastNormalMktPreopenEnded(
+            bytes_to_struct(buf),
+        )),
+        7130 => Some(NfoBroadcastTransactionMapping::BcastMktMvmtCmOiIn(
+            bytes_to_struct(buf),
+        )),
+        7200 => Some(NfoBroadcastTransactionMapping::BcastMboMbpUpdate(
+            bytes_to_struct(buf),
+        )),
+        7201 => Some(NfoBroadcastTransactionMapping::BcastMwRoundRobin(
+            bytes_to_struct(buf),
+        )),
+        7202 => Some(NfoBroadcastTransactionMapping::BcastTickerAndMktIndex(
+            bytes_to_struct(buf),
+        )),
+        7203 => Some(NfoBroadcastTransactionMapping::BcastIndustryIndexUpdate(
+            bytes_to_struct(buf),
+        )),
+        7206 => Some(NfoBroadcastTransactionMapping::BcastSystemInformationOut(
+            bytes_to_struct(buf),
+        )),
+        7208 => Some(NfoBroadcastTransactionMapping::BcastOnlyMbp(
+            bytes_to_struct(buf),
+        )),
+        7210 => Some(
+            NfoBroadcastTransactionMapping::BcastSecurityStatusChgPreopen(bytes_to_struct(buf)),
+        ),
+        7211 => Some(NfoBroadcastTransactionMapping::BcastSpdMbpDelta(
+            bytes_to_struct(buf),
+        )),
         7220 => Some({
             NfoBroadcastTransactionMapping::BcastLimitPriceProtectionRange(bytes_to_struct(buf))
         }),
-        7305 => Some(NfoBroadcastTransactionMapping::BcastSecurityMstrChg(bytes_to_struct(buf))),
-        7306 => Some(NfoBroadcastTransactionMapping::BcastPartMstrChg(bytes_to_struct(buf))),
-        7320 => Some(NfoBroadcastTransactionMapping::BcastSecurityStatusChg(bytes_to_struct(buf))),
-        7324 => Some(NfoBroadcastTransactionMapping::BcastInstrMstrChg(bytes_to_struct(buf))),
-        7340 => Some(NfoBroadcastTransactionMapping::BcastSecMstrChngPeriodic(bytes_to_struct(buf))),
-        7341 => Some(NfoBroadcastTransactionMapping::BcastSpdMstrChgPeriodic(bytes_to_struct(buf))),
-        9010 => Some(NfoBroadcastTransactionMapping::BcastTurnoverExceeded(bytes_to_struct(buf))),
-        9011 => Some(NfoBroadcastTransactionMapping::BcastBrokerReactivated(bytes_to_struct(buf))),
-        _ => {println!("Invalid fao transaction id: {}", transaction_id); None},
+        7305 => Some(NfoBroadcastTransactionMapping::BcastSecurityMstrChg(
+            bytes_to_struct(buf),
+        )),
+        7306 => Some(NfoBroadcastTransactionMapping::BcastPartMstrChg(
+            bytes_to_struct(buf),
+        )),
+        7320 => Some(NfoBroadcastTransactionMapping::BcastSecurityStatusChg(
+            bytes_to_struct(buf),
+        )),
+        7324 => Some(NfoBroadcastTransactionMapping::BcastInstrMstrChg(
+            bytes_to_struct(buf),
+        )),
+        7340 => Some(NfoBroadcastTransactionMapping::BcastSecMstrChngPeriodic(
+            bytes_to_struct(buf),
+        )),
+        7341 => Some(NfoBroadcastTransactionMapping::BcastSpdMstrChgPeriodic(
+            bytes_to_struct(buf),
+        )),
+        9010 => Some(NfoBroadcastTransactionMapping::BcastTurnoverExceeded(
+            bytes_to_struct(buf),
+        )),
+        9011 => Some(NfoBroadcastTransactionMapping::BcastBrokerReactivated(
+            bytes_to_struct(buf),
+        )),
+        _ => {
+            println!("Invalid fao transaction id: {}", transaction_id);
+            None
+        }
     }
 }
 

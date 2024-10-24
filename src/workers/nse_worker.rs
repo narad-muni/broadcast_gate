@@ -1,18 +1,30 @@
-use std::{mem::size_of, time::{SystemTime, UNIX_EPOCH}};
+use std::{
+    mem::size_of,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use crate::{
-    constants::{BCAST_MBO_MBP, BCAST_ONLY_MBP, BCAST_ONLY_MBP_EQ, MAX_BUY_SELL_DEPTH_IDX, MAX_MARKET_DEPTH_IDX, MAX_MBPINFO_IDX, SKIP_BYTES}, global::{EXCHANGE, NSE_HEADER_SIZE, STATISTICS}, types::{
+    constants::{
+        BCAST_MBO_MBP, BCAST_ONLY_MBP, BCAST_ONLY_MBP_EQ, MAX_BUY_SELL_DEPTH_IDX,
+        MAX_MARKET_DEPTH_IDX, MAX_MBPINFO_IDX, SKIP_BYTES,
+    },
+    global::{EXCHANGE, NSE_HEADER_SIZE},
+    types::{
         packet::Packet,
         packet_structures::{
             ncd::{build_ncd_struct, NcdBroadcastTransactionMapping},
             neq::{
-                self, build_neq_struct, BcastHeaders, BcastInteractiveMBPDataCEDTC, BcastOnlyMBPCEDTC, NeqBroadcastTransactionMapping
+                self, build_neq_struct, BcastHeaders, BcastInteractiveMBPDataCEDTC,
+                BcastOnlyMBPCEDTC, NeqBroadcastTransactionMapping,
             },
             nfo::{
-                self, build_nfo_struct, NfoBroadcastTransactionMapping, TagMarketDepthInfo, TagMarketPictureBroadcast, TagMessageHeader
+                self, build_nfo_struct, NfoBroadcastTransactionMapping, TagMarketDepthInfo,
+                TagMarketPictureBroadcast, TagMessageHeader,
             },
-        }, settings::Exchange,
-    }, utils::byte_utils::{create_empty, struct_to_bytes}
+        },
+        settings::Exchange,
+    },
+    utils::byte_utils::{create_empty, struct_to_bytes},
 };
 
 pub fn cast_and_twiddle_nfo(packet: &mut Packet) {
@@ -78,7 +90,10 @@ pub fn cast_and_twiddle_ncd(packet: &mut Packet) {
 }
 
 // 7200 for fao, cd
-pub fn convert_mbo_mbp(bcast_mbo_mbp: &mut nfo::BcastMBOMBP, packet_size: &mut usize) -> TagMarketPictureBroadcast {
+pub fn convert_mbo_mbp(
+    bcast_mbo_mbp: &mut nfo::BcastMBOMBP,
+    packet_size: &mut usize,
+) -> TagMarketPictureBroadcast {
     let header = TagMessageHeader {
         message_code: bcast_mbo_mbp.bcast_header.trans_code as i32,
         transaction_type: 0,
@@ -86,7 +101,10 @@ pub fn convert_mbo_mbp(bcast_mbo_mbp: &mut nfo::BcastMBOMBP, packet_size: &mut u
         alpha_char: bcast_mbo_mbp.bcast_header.alpha_char,
         trader_id: bcast_mbo_mbp.bcast_header.bc_seq_no,
         error_code: bcast_mbo_mbp.bcast_header.error_code,
-        timestamp: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_micros() as u64,
+        timestamp: SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_micros() as u64,
         timestamp1: bcast_mbo_mbp.bcast_header.time_stamp2,
         timestamp2: bcast_mbo_mbp.bcast_header.time_stamp2,
         message_length: bcast_mbo_mbp.bcast_header.message_length,
@@ -144,13 +162,17 @@ pub fn convert_mbo_mbp(bcast_mbo_mbp: &mut nfo::BcastMBOMBP, packet_size: &mut u
         market_depth_info,
     };
 
-    *packet_size = size_of::<TagMarketPictureBroadcast>() - (size_of::<TagMarketDepthInfo>() * (MAX_MARKET_DEPTH_IDX - mkt_depth_cnt));
+    *packet_size = size_of::<TagMarketPictureBroadcast>()
+        - (size_of::<TagMarketDepthInfo>() * (MAX_MARKET_DEPTH_IDX - mkt_depth_cnt));
 
     picture
 }
 
 // 7200 for eq
-pub fn convert_mbo_mbp_eq(bcast_mbo_mbp: &mut neq::BcastMBOMBP, packet_size: &mut usize) -> TagMarketPictureBroadcast {
+pub fn convert_mbo_mbp_eq(
+    bcast_mbo_mbp: &mut neq::BcastMBOMBP,
+    packet_size: &mut usize,
+) -> TagMarketPictureBroadcast {
     let header = TagMessageHeader {
         message_code: bcast_mbo_mbp.bcast_header.trans_code as i32,
         transaction_type: 0,
@@ -158,7 +180,10 @@ pub fn convert_mbo_mbp_eq(bcast_mbo_mbp: &mut neq::BcastMBOMBP, packet_size: &mu
         alpha_char: bcast_mbo_mbp.bcast_header.alpha_char,
         trader_id: bcast_mbo_mbp.bcast_header.bc_seq_no,
         error_code: bcast_mbo_mbp.bcast_header.error_code,
-        timestamp: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_micros() as u64,
+        timestamp: SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_micros() as u64,
         timestamp1: bcast_mbo_mbp.bcast_header.time_stamp2,
         timestamp2: bcast_mbo_mbp.bcast_header.time_stamp2,
         message_length: bcast_mbo_mbp.bcast_header.message_length,
@@ -216,13 +241,17 @@ pub fn convert_mbo_mbp_eq(bcast_mbo_mbp: &mut neq::BcastMBOMBP, packet_size: &mu
         market_depth_info,
     };
 
-    *packet_size = size_of::<TagMarketPictureBroadcast>() - (size_of::<TagMarketDepthInfo>() * (MAX_MARKET_DEPTH_IDX - mkt_depth_cnt));
+    *packet_size = size_of::<TagMarketPictureBroadcast>()
+        - (size_of::<TagMarketDepthInfo>() * (MAX_MARKET_DEPTH_IDX - mkt_depth_cnt));
 
     picture
 }
 
 // 7208 fao, cd
-pub fn convert_only_mbp(bcast_only_mbp: &mut nfo::BcastOnlyMBP, packet_size: &mut usize) -> TagMarketPictureBroadcast {
+pub fn convert_only_mbp(
+    bcast_only_mbp: &mut nfo::BcastOnlyMBP,
+    packet_size: &mut usize,
+) -> TagMarketPictureBroadcast {
     let header = TagMessageHeader {
         message_code: bcast_only_mbp.bcast_header.trans_code as i32,
         transaction_type: 0,
@@ -230,7 +259,10 @@ pub fn convert_only_mbp(bcast_only_mbp: &mut nfo::BcastOnlyMBP, packet_size: &mu
         alpha_char: bcast_only_mbp.bcast_header.alpha_char,
         trader_id: bcast_only_mbp.bcast_header.bc_seq_no,
         error_code: bcast_only_mbp.bcast_header.error_code,
-        timestamp: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_micros() as u64,
+        timestamp: SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_micros() as u64,
         timestamp1: bcast_only_mbp.bcast_header.time_stamp2,
         timestamp2: bcast_only_mbp.bcast_header.time_stamp2,
         message_length: bcast_only_mbp.bcast_header.message_length,
@@ -292,13 +324,17 @@ pub fn convert_only_mbp(bcast_only_mbp: &mut nfo::BcastOnlyMBP, packet_size: &mu
         market_depth_info,
     };
 
-    *packet_size = size_of::<TagMarketPictureBroadcast>() - (size_of::<TagMarketDepthInfo>() * (MAX_MARKET_DEPTH_IDX - mkt_depth_cnt));
+    *packet_size = size_of::<TagMarketPictureBroadcast>()
+        - (size_of::<TagMarketDepthInfo>() * (MAX_MARKET_DEPTH_IDX - mkt_depth_cnt));
 
     picture
 }
 
 // 18705 eq
-pub fn convert_only_mbp_eq(bcast_only_mbp: &mut neq::BcastOnlyMBP, packet_size: &mut usize) -> TagMarketPictureBroadcast {
+pub fn convert_only_mbp_eq(
+    bcast_only_mbp: &mut neq::BcastOnlyMBP,
+    packet_size: &mut usize,
+) -> TagMarketPictureBroadcast {
     let header = TagMessageHeader {
         message_code: bcast_only_mbp.bcast_header.trans_code as i32,
         transaction_type: 0,
@@ -306,7 +342,10 @@ pub fn convert_only_mbp_eq(bcast_only_mbp: &mut neq::BcastOnlyMBP, packet_size: 
         alpha_char: bcast_only_mbp.bcast_header.alpha_char,
         trader_id: bcast_only_mbp.bcast_header.bc_seq_no,
         error_code: bcast_only_mbp.bcast_header.error_code,
-        timestamp: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_micros() as u64,
+        timestamp: SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_micros() as u64,
         timestamp1: bcast_only_mbp.bcast_header.time_stamp2,
         timestamp2: bcast_only_mbp.bcast_header.time_stamp2,
         message_length: bcast_only_mbp.bcast_header.message_length,
@@ -368,7 +407,8 @@ pub fn convert_only_mbp_eq(bcast_only_mbp: &mut neq::BcastOnlyMBP, packet_size: 
         market_depth_info,
     };
 
-    *packet_size = size_of::<TagMarketPictureBroadcast>() - (size_of::<TagMarketDepthInfo>() * (MAX_MARKET_DEPTH_IDX - mkt_depth_cnt));
+    *packet_size = size_of::<TagMarketPictureBroadcast>()
+        - (size_of::<TagMarketDepthInfo>() * (MAX_MARKET_DEPTH_IDX - mkt_depth_cnt));
 
     picture
 }
@@ -385,7 +425,10 @@ pub fn convert_only_mbp_cedtc(
         alpha_char: bcast_only_mbp_cedtc.bcast_header.alpha_char,
         trader_id: bcast_only_mbp_cedtc.bcast_header.bc_seq_no,
         error_code: bcast_only_mbp_cedtc.bcast_header.error_code,
-        timestamp: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_micros() as u64,
+        timestamp: SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_micros() as u64,
         timestamp1: bcast_only_mbp_cedtc.bcast_header.time_stamp2,
         timestamp2: bcast_only_mbp_cedtc.bcast_header.time_stamp2,
         message_length: bcast_only_mbp_cedtc.bcast_header.message_length,
@@ -448,15 +491,14 @@ pub fn convert_only_mbp_cedtc(
         market_depth_info,
     };
 
-    *packet_size = size_of::<TagMarketPictureBroadcast>() - (size_of::<TagMarketDepthInfo>() * (MAX_MARKET_DEPTH_IDX - mkt_depth_cnt));
+    *packet_size = size_of::<TagMarketPictureBroadcast>()
+        - (size_of::<TagMarketDepthInfo>() * (MAX_MARKET_DEPTH_IDX - mkt_depth_cnt));
 
     picture
 }
 
 pub fn get_token(trans_code: i16, buf: &[u8], idx: usize) -> i32 {
-    let exchange = unsafe {
-        EXCHANGE
-    };
+    let exchange = unsafe { EXCHANGE };
 
     let mut token = 0;
 
@@ -491,7 +533,7 @@ pub fn get_token(trans_code: i16, buf: &[u8], idx: usize) -> i32 {
             let token_end = token_start + size_of::<i32>();
 
             token = i32::from_be_bytes(buf[token_start..token_end].try_into().unwrap());
-        }  
+        }
     }
 
     token

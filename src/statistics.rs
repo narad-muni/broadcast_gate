@@ -19,7 +19,7 @@ unsafe impl Sync for Statistics {}
 impl Statistics {
     pub const fn new() -> Self {
         Self {
-            inner: UnsafeCell::new(StatisticsData{
+            inner: UnsafeCell::new(StatisticsData {
                 udp_packets_count: 0,
                 other_packets_count: 0,
                 mbo_packets_count: 0,
@@ -40,10 +40,19 @@ impl Statistics {
             io::stdin().read_line(&mut command).unwrap();
 
             match command.trim() {
-                "1" => println!("7208 / 7200 / 18705 Packets Count : {}", STATISTICS.get().mbo_packets_count),
-                "2" => println!("Other Packets Processed : {}", STATISTICS.get().other_packets_count),
+                "1" => println!(
+                    "7208 / 7200 / 18705 Packets Count : {}",
+                    STATISTICS.get().mbo_packets_count
+                ),
+                "2" => println!(
+                    "Other Packets Processed : {}",
+                    STATISTICS.get().other_packets_count
+                ),
                 "3" => println!("Total UDP Packets : {}", STATISTICS.get().udp_packets_count),
-                "4" => println!("Filtered UDP Packets : {}", STATISTICS.get().filtered_packets_count),
+                "4" => println!(
+                    "Filtered UDP Packets : {}",
+                    STATISTICS.get().filtered_packets_count
+                ),
                 _ => println!("Unknown command"),
             }
 
@@ -66,6 +75,4 @@ Select an option
 
         println!("{options}");
     }
-
-
 }

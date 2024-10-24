@@ -9,14 +9,14 @@ mod constants;
 mod distributor;
 mod global;
 mod input;
+mod macros;
 mod output;
 mod settings;
+mod statistics;
 mod threadpool;
 mod types;
 mod utils;
 mod workers;
-mod statistics;
-mod macros;
 
 fn main() {
     settings::init();

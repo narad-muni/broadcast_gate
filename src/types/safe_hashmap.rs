@@ -1,6 +1,4 @@
-use std::{
-    cell::UnsafeCell, collections::HashMap, hash::Hash
-};
+use std::{cell::UnsafeCell, collections::HashMap, hash::Hash};
 
 pub struct UnsafeHashMap<K, V> {
     pub map: UnsafeCell<HashMap<K, V>>,
@@ -20,14 +18,10 @@ where
     }
 
     pub fn insert(&self, key: K, value: V) -> Option<V> {
-        unsafe {
-            (*self.map.get()).insert(key, value)
-        }
+        unsafe { (*self.map.get()).insert(key, value) }
     }
 
     pub fn get(&self, key: &K) -> Option<&V> {
-        unsafe {
-            (*self.map.get()).get(key)
-        }
+        unsafe { (*self.map.get()).get(key) }
     }
 }

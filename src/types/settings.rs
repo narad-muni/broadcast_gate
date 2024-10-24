@@ -23,6 +23,8 @@ pub struct Settings {
     pub output_udp_ip: String,
     pub output_udp_port: usize,
 
+    pub fast_template: Option<String>,
+
     pub steps: usize,
 
     pub thread_count: usize,
@@ -41,6 +43,7 @@ pub enum Exchange {
     NFO,
     NCD,
     BSE,
+    MCX,
 }
 
 // Used for converting string array of outputs in config to bit flags

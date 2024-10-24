@@ -3,9 +3,10 @@ use twiddler::Twiddle;
 use crate::constants::BUF_SIZE;
 
 pub mod bse;
+pub mod mcx;
 pub mod ncd; // NSE Commodities
 pub mod neq; // NSE Equity
-pub mod nfo; // NSE FAO // BSE Structures
+pub mod nfo; // NSE FAO
 
 #[derive(Debug, Twiddle)]
 #[repr(C, packed(2))]

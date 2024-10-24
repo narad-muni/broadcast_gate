@@ -3,7 +3,10 @@ use std::{mem::MaybeUninit, net::Ipv4Addr};
 use socket2::Socket;
 
 use crate::{
-    constants::{BUF_SIZE, UNRECOVERABLE_ERROR_KINDS}, global::{INPUT_QUEUE, STATISTICS}, settings, types::packet::Packet,
+    constants::{BUF_SIZE, UNRECOVERABLE_ERROR_KINDS},
+    global::{INPUT_QUEUE, STATISTICS},
+    settings,
+    types::packet::Packet,
     utils::{byte_utils::uninit_to_buf, udp_utils::build_socket},
 };
 
@@ -58,18 +61,22 @@ impl<'a> UdpInput<'a> {
 
         loop {
             // let mut buf = Packet([0; BUF_SIZE]);
-            let mut buf: [MaybeUninit<u8>; BUF_SIZE] = unsafe { MaybeUninit::uninit().assume_init() };
+            let mut buf: [MaybeUninit<u8>; BUF_SIZE] =
+                unsafe { MaybeUninit::uninit().assume_init() };
+            let mut packet_size = BUF_SIZE;
 
             // Value can never be none
             debug_assert!(self.current.is_some());
-            
+
             match self.current.unwrap().recv_from(&mut buf) {
-                Ok((_, addr)) => {
+                Ok((len, addr)) => {
                     // Drop packet if source ip doesn't match
                     if *addr.as_socket_ipv4().unwrap().ip() != self.source_ip {
                         STATISTICS.get().filtered_packets_count += 1;
                         continue;
                     }
+
+                    packet_size = len;
 
                     STATISTICS.get().udp_packets_count += 1;
                 }
@@ -100,7 +107,7 @@ impl<'a> UdpInput<'a> {
                 }
             }
 
-            let packet = Packet(uninit_to_buf(&buf), BUF_SIZE);
+            let packet = Packet(uninit_to_buf(&buf), packet_size);
             INPUT_QUEUE.push(packet);
         }
     }

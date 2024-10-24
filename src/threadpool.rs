@@ -1,7 +1,7 @@
 use std::{
     ptr,
     sync::atomic::Ordering,
-    thread::{self, JoinHandle}
+    thread::{self, JoinHandle},
 };
 
 use threadpool::ThreadPool;
@@ -43,15 +43,13 @@ impl ThreadPoolMaster {
 
 pub fn work_on_map(work: Work) {
     // We assume that work.atomic_ptr is not null
-    let atomic_ptr = unsafe {
-        work.atomic_ptr.unwrap_unchecked()
-    };
+    let atomic_ptr = unsafe { work.atomic_ptr.unwrap_unchecked() };
 
     let old_packet_ptr = atomic_ptr.swap(ptr::null_mut(), Ordering::SeqCst);
 
     // Creating box from raw ptr is unsafe, because it could be null
     // however, we only ensure that this value is not null
-    let mut old_packet = unsafe {Box::from_raw(old_packet_ptr)};
+    let mut old_packet = unsafe { Box::from_raw(old_packet_ptr) };
 
     // Call associated function
     (work.processing_fn)(&mut *old_packet);

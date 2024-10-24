@@ -1,4 +1,7 @@
-use std::{mem::{self, MaybeUninit}, ptr};
+use std::{
+    mem::{self, MaybeUninit},
+    ptr,
+};
 
 use crate::constants::BUF_SIZE;
 
@@ -11,7 +14,7 @@ pub fn bytes_to_struct<T>(s: &[u8]) -> T {
 }
 
 pub fn struct_to_bytes<T>(s: &T, buffer: &mut [u8]) {
-    unsafe{
+    unsafe {
         let mut size = std::mem::size_of::<T>();
 
         // Ensure the buffer is large enough
@@ -28,9 +31,7 @@ pub fn struct_to_bytes<T>(s: &T, buffer: &mut [u8]) {
 }
 
 pub fn uninit_to_buf(src: &[MaybeUninit<u8>; BUF_SIZE]) -> [u8; BUF_SIZE] {
-    unsafe {
-        std::mem::transmute::<[MaybeUninit<u8>; BUF_SIZE], [u8; BUF_SIZE]>(*src)
-    }
+    unsafe { std::mem::transmute::<[MaybeUninit<u8>; BUF_SIZE], [u8; BUF_SIZE]>(*src) }
 }
 
 pub fn create_empty<T>() -> T {

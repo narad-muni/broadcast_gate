@@ -8,7 +8,7 @@ pub type ProcessingFn = fn(&mut Packet);
 pub struct Work {
     pub work_type: WorkType,
     pub processing_fn: ProcessingFn,
-    pub atomic_ptr: Option<Arc<AtomicPtr<Packet>>>
+    pub atomic_ptr: Option<Arc<AtomicPtr<Packet>>>,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]

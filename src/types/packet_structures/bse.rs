@@ -1,4 +1,7 @@
-use crate::{constants::*, utils::byte_utils::{bytes_to_struct, struct_to_bytes}};
+use crate::{
+    constants::*,
+    utils::byte_utils::{bytes_to_struct, struct_to_bytes},
+};
 use twiddler::Twiddle;
 
 #[derive(Debug, Twiddle)]
@@ -54,7 +57,9 @@ impl BseBroadcastTransactionMapping {
         match self {
             BseBroadcastTransactionMapping::BcastTimeMessage(s) => struct_to_bytes(&s, buf),
             BseBroadcastTransactionMapping::BcastSessionChange(s) => struct_to_bytes(&s, buf),
-            BseBroadcastTransactionMapping::BcastAuctoinSessionChange(s) => struct_to_bytes(&s, buf),
+            BseBroadcastTransactionMapping::BcastAuctoinSessionChange(s) => {
+                struct_to_bytes(&s, buf)
+            }
             BseBroadcastTransactionMapping::BcastNewsHeadline(s) => struct_to_bytes(&s, buf),
             BseBroadcastTransactionMapping::BcastIndex1(s) => struct_to_bytes(&s, buf),
             BseBroadcastTransactionMapping::BcastIndex2(s) => struct_to_bytes(&s, buf),
@@ -70,7 +75,9 @@ impl BseBroadcastTransactionMapping {
             BseBroadcastTransactionMapping::BcastKeepAlive(s) => struct_to_bytes(&s, buf),
             BseBroadcastTransactionMapping::BcastDebtMbp(s) => struct_to_bytes(&s, buf),
             BseBroadcastTransactionMapping::BcastLppRange(s) => struct_to_bytes(&s, buf),
-            BseBroadcastTransactionMapping::BcastCallAuctionCxlQtyMsg(s) => struct_to_bytes(&s, buf),
+            BseBroadcastTransactionMapping::BcastCallAuctionCxlQtyMsg(s) => {
+                struct_to_bytes(&s, buf)
+            }
         }
     }
 }

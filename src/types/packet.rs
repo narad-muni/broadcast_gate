@@ -1,7 +1,12 @@
 use std::mem::{offset_of, size_of};
 
 use crate::{
-    constants::{BCAST_MBO_MBP, BCAST_ONLY_MBP, BCAST_ONLY_MBP_EQ, BUF_SIZE, MAX_SUB_PACKETS, SKIP_BYTES}, global::STATISTICS, utils::byte_utils::{bytes_to_struct, bytes_to_struct_mut, create_empty}, workers::nse_worker::get_token
+    constants::{
+        BCAST_MBO_MBP, BCAST_ONLY_MBP, BCAST_ONLY_MBP_EQ, BUF_SIZE, MAX_SUB_PACKETS, SKIP_BYTES,
+    },
+    global::STATISTICS,
+    utils::byte_utils::{bytes_to_struct, bytes_to_struct_mut, create_empty},
+    workers::nse_worker::get_token,
 };
 
 use super::{
@@ -66,8 +71,10 @@ impl Packet {
                 let trans_code = BcastHeaders::get_trans_code(&packet.0);
 
                 // Fetch worktype for compressed packet
-                let work_type = if trans_code == BCAST_ONLY_MBP || trans_code == BCAST_ONLY_MBP_EQ || trans_code == BCAST_MBO_MBP {
-
+                let work_type = if trans_code == BCAST_ONLY_MBP
+                    || trans_code == BCAST_ONLY_MBP_EQ
+                    || trans_code == BCAST_MBO_MBP
+                {
                     let token = get_token(trans_code, &packet.0, 0);
 
                     WorkType::TokenWise(token)
@@ -78,7 +85,6 @@ impl Packet {
                     WorkType::SegmentWise(segment)
                 };
 
-                
                 if trans_code == BCAST_MBO_MBP {
                     // Used because cannot use another condition with below if let
                     // Below code shouldn't be executed for BCAST_MBO_MBP 7200
