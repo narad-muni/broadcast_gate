@@ -5,6 +5,16 @@ pub enum Message {
     MDPacketHeader(MDPacketHeader),
     FastReset(FastReset),
     DepthSnapshot(DepthSnapshot),
+    DepthIncremental(DepthIncremental),
+    QuoteRequest(QuoteRequest),
+    CrossRequest(CrossRequest),
+    TopOfBookImplied(TopOfBookImplied),
+    FlexibleInstrumentUpdate(FlexibleInstrumentUpdate),
+    InstrumentStateChange(InstrumentStateChange),
+    IndexStats(IndexStats),
+    ProductStateChange(ProductStateChange),
+    MassInstrumentStateChange(MassInstrumentStateChange),
+    ComplexInstrumentUpdate(ComplexInstrumentUpdate),
 }
 
 #[derive(Serialize, Deserialize, Debug)]

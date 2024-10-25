@@ -209,7 +209,7 @@ impl NeqBroadcastTransactionMapping {
             NeqBroadcastTransactionMapping::BcastBuyBack(s) => struct_to_bytes(s, buffer),
             NeqBroadcastTransactionMapping::BcastCallAuctionMbp(s) => struct_to_bytes(s, buffer),
             NeqBroadcastTransactionMapping::BcastSecurityMstrChg(s) => struct_to_bytes(s, buffer),
-        }
+        };
     }
 }
 

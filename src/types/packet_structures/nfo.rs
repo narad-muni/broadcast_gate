@@ -184,7 +184,7 @@ impl NfoBroadcastTransactionMapping {
             NfoBroadcastTransactionMapping::BcastLimitPriceProtectionRange(s) => {
                 struct_to_bytes(s, buffer)
             }
-        }
+        };
     }
 }
 

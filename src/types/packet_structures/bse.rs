@@ -78,7 +78,7 @@ impl BseBroadcastTransactionMapping {
             BseBroadcastTransactionMapping::BcastCallAuctionCxlQtyMsg(s) => {
                 struct_to_bytes(&s, buf)
             }
-        }
+        };
     }
 }
 

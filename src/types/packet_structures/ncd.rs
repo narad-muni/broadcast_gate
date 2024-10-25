@@ -206,7 +206,7 @@ impl NcdBroadcastTransactionMapping {
             }
             NcdBroadcastTransactionMapping::BcastTurnoverExceeded(s) => struct_to_bytes(s, buffer),
             NcdBroadcastTransactionMapping::BcastBrokerReactivated(s) => struct_to_bytes(s, buffer),
-        }
+        };
     }
 }
 
