@@ -63,7 +63,7 @@ impl<'a> UdpInput<'a> {
             // let mut buf = Packet([0; BUF_SIZE]);
             let mut buf: [MaybeUninit<u8>; BUF_SIZE] =
                 unsafe { MaybeUninit::uninit().assume_init() };
-            let mut packet_size = BUF_SIZE;
+            let packet_size ;
 
             // Value can never be none
             debug_assert!(self.current.is_some());
