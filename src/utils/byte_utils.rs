@@ -1,6 +1,5 @@
 use std::{
-    mem::{self, MaybeUninit},
-    ptr,
+    any::type_name, mem::{self, ManuallyDrop, MaybeUninit}, ptr
 };
 
 use crate::constants::BUF_SIZE;
@@ -30,6 +29,30 @@ pub fn struct_to_bytes<T>(s: &T, buffer: &mut [u8]) -> usize {
     }
 
     size
+}
+
+// Safe because of assert
+pub fn cast<T, F>(input: F) -> T {
+    // Ensure that T and U have the same size to avoid undefined behavior
+    assert_eq!(std::mem::size_of::<T>(), std::mem::size_of::<F>(), "Cannot cast from smaller struct {} to larger struct {}", type_name::<F>(), type_name::<T>());
+
+    // Use `ManuallyDrop` to take ownership of `input` without dropping it
+    let input = ManuallyDrop::new(input);
+
+    // Use `ptr::read` to reinterpret the bytes of `input` as type `U`
+    unsafe { ptr::read(&*input as *const F as *const T) }
+}
+
+
+// Allows to cast from smaller structure to larger structure
+// Accessing field outside of F's size will cause segfault
+pub unsafe fn cast_unsafe<F, T>(input: F) -> T {
+
+    // Use `ManuallyDrop` to take ownership of `input` without dropping it
+    let input = ManuallyDrop::new(input);
+
+    // Use `ptr::read` to reinterpret the bytes of `input` as type `U`
+    unsafe { ptr::read(&*input as *const F as *const T) }
 }
 
 pub fn uninit_to_buf(src: &[MaybeUninit<u8>; BUF_SIZE]) -> [u8; BUF_SIZE] {
