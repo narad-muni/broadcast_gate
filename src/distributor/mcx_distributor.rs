@@ -4,7 +4,7 @@ use bytes::Bytes;
 use fastlib::{Decoder, ModelFactory};
 use serde::Deserialize;
 
-use crate::{settings, types::packet_structures::mcx::Message};
+use crate::{constants::BUF_SIZE, settings, types::{packet::Packet, packet_structures::mcx::Message, work::{Work, WorkType}}, utils::byte_utils::struct_to_bytes};
 
 use super::Distribute;
 
@@ -53,7 +53,17 @@ impl Distribute for McxDistributor {
 
             let st = st.unwrap();
 
-            println!("{:#?}", st);
+            let mut packet = Packet([0; BUF_SIZE], BUF_SIZE);
+            
+            packet.1 = struct_to_bytes(&st, &mut packet.0);
+
+            let work = Work {
+                work_type: WorkType::Mcx,
+                processing_fn: |_| {},
+                atomic_ptr: None,
+            };
+
+            // TODO: Distribute work to tpool
 
             if let Message::FastReset(_) = st {
                 self.decoder.reset();
