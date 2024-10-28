@@ -1,5 +1,5 @@
 use crate::{
-    types::work::{Work, WorkType},
+    types::{packet::Packet, work::{Work, WorkType}},
     workers::get_ncd_processing_fn,
 };
 
@@ -14,7 +14,7 @@ impl NcdDistributor {
 }
 
 impl Distribute for NcdDistributor {
-    fn distribute(&mut self, packet: crate::types::packet::Packet) {
+    fn distribute(&mut self, packet: Packet) {
         // If nse, extract packets received in single packet
         let (packets, no_of_packets) = packet.get_nse_packets();
 
@@ -26,6 +26,7 @@ impl Distribute for NcdDistributor {
                 work_type,
                 processing_fn,
                 atomic_ptr: None,
+                mcx_state: None,
             };
 
             if let WorkType::TokenWise(_) = work_type {

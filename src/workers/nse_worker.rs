@@ -22,12 +22,12 @@ use crate::{
                 TagMarketPictureBroadcast, TagMessageHeader,
             },
         },
-        settings::Exchange,
+        settings::Exchange, work::Work,
     },
     utils::byte_utils::{create_empty, struct_to_bytes},
 };
 
-pub fn cast_and_twiddle_nfo(packet: &mut Packet) {
+pub fn cast_and_twiddle_nfo(packet: &mut Packet, work: &Work) {
     let trans_code = BcastHeaders::get_trans_code(&packet.0);
 
     if let Some(mut nfo_struct) = build_nfo_struct(trans_code, &packet.0[SKIP_BYTES..]) {
@@ -46,7 +46,7 @@ pub fn cast_and_twiddle_nfo(packet: &mut Packet) {
     };
 }
 
-pub fn cast_and_twiddle_neq(packet: &mut Packet) {
+pub fn cast_and_twiddle_neq(packet: &mut Packet, work: &Work) {
     let trans_code = BcastHeaders::get_trans_code(&packet.0);
 
     if let Some(mut neq_struct) = build_neq_struct(trans_code, &packet.0[SKIP_BYTES..]) {
@@ -68,7 +68,7 @@ pub fn cast_and_twiddle_neq(packet: &mut Packet) {
     }
 }
 
-pub fn cast_and_twiddle_ncd(packet: &mut Packet) {
+pub fn cast_and_twiddle_ncd(packet: &mut Packet, work: &Work) {
     let trans_code = BcastHeaders::get_trans_code(&packet.0);
 
     if let Some(mut ncd_struct) = build_ncd_struct(trans_code, &packet.0[SKIP_BYTES..]) {

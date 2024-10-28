@@ -7,8 +7,9 @@ use std::{
     },
 };
 
+use crate::types::state::NseTokenState;
 use crate::{
-    global::{TOKEN_WISE_MAP, TPOOL_QUEUE, WORK_LOCKS, WORK_QUEUES},
+    global::{NSE_TOKEN_WISE_MAP, TPOOL_QUEUE, WORK_LOCKS, PACKET_QUEUES},
     types::{packet::Packet, work::Work},
 };
 
@@ -57,10 +58,10 @@ impl Distributor {
 pub fn distribute_to_queue(packet: Packet, work: Work) {
     let work_id = work.work_type.get_id();
 
-    let work_queue = &WORK_QUEUES[work_id];
+    let packet_queue = &PACKET_QUEUES[work_id];
     let work_lock = &WORK_LOCKS[work_id];
 
-    work_queue.push(packet);
+    packet_queue.push(packet);
 
     // If no work of current type in threadpool
     if work_lock
@@ -74,13 +75,13 @@ pub fn distribute_to_queue(packet: Packet, work: Work) {
 pub fn distribute_to_map(packet: Packet, mut work: Work) {
     let new_packet_ptr = Box::into_raw(Box::new(packet));
 
-    let atomic_ptr = TOKEN_WISE_MAP.get(&work.work_type.get_id());
+    let nse_token_state = NSE_TOKEN_WISE_MAP.get(&work.work_type.get_id());
 
-    if let Some(atomic_ptr) = atomic_ptr {
-        work.atomic_ptr = Some(atomic_ptr.clone());
+    if let Some(nse_token_state) = nse_token_state {
+        work.atomic_ptr = Some(nse_token_state.ptr.clone());
         // If value exists
         // retreive old packet by swaping with new value
-        let old_packet_ptr = atomic_ptr.swap(new_packet_ptr, Ordering::SeqCst);
+        let old_packet_ptr = nse_token_state.ptr.swap(new_packet_ptr, Ordering::SeqCst);
 
         // If old packet ptr was set to null
         // create new work
@@ -98,7 +99,7 @@ pub fn distribute_to_map(packet: Packet, mut work: Work) {
         let atomic_ptr = Arc::new(AtomicPtr::new(new_packet_ptr));
         work.atomic_ptr = Some(atomic_ptr.clone());
 
-        TOKEN_WISE_MAP.insert(work.work_type.get_id(), atomic_ptr);
+        NSE_TOKEN_WISE_MAP.insert(work.work_type.get_id(), NseTokenState{ptr: atomic_ptr});
 
         TPOOL_QUEUE.push(work);
     }

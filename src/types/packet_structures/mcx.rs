@@ -5,6 +5,7 @@ pub enum Message {
     MDPacketHeader(MDPacketHeader),
     FastReset(FastReset),
     DepthSnapshot(DepthSnapshot),
+    DepthSnapshotEmpty,
     DepthIncremental(DepthIncremental),
     QuoteRequest(QuoteRequest),
     CrossRequest(CrossRequest),
@@ -31,21 +32,21 @@ pub struct MDPacketHeader {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DepthSnapshot {
-    MsgType: String,
-    MsgSeqNum: Option<u32>,
-    SenderCompID: u32,
-    LastMsgSeqNumProcessed: Option<u32>,
-    RefreshIndicator: Option<u32>,
-    MarketSegmentID: u32,
-    SecurityID: i64,
-    SecurityIDSource: String,
-    ProductComplex: u32,
-    SecurityStatus: u32,
-    TESSecurityStatus: Option<u32>,
-    LastUpdateTime: i64,
-    TotalBuyQuantity: Option<f64>,
-    TotalSellQuantity: Option<f64>,
-    MDSshGrp: Vec<MDSshGrp>,
+    pub MsgType: String,
+    pub MsgSeqNum: Option<u32>,
+    pub SenderCompID: u32,
+    pub LastMsgSeqNumProcessed: Option<u32>,
+    pub RefreshIndicator: Option<u32>,
+    pub MarketSegmentID: u32,
+    pub SecurityID: i64,
+    pub SecurityIDSource: String,
+    pub ProductComplex: u32,
+    pub SecurityStatus: u32,
+    pub TESSecurityStatus: Option<u32>,
+    pub LastUpdateTime: i64,
+    pub TotalBuyQuantity: Option<f64>,
+    pub TotalSellQuantity: Option<f64>,
+    pub MDSshGrp: Vec<MDSshGrp>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -144,31 +145,31 @@ struct InstrumentStateChange {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct DepthIncremental {
-    MsgType: String,
-    MsgSeqNum: u32,
-    SenderCompID: u32,
-    MarketSegmentID: u32,
-    MDIncGrp: Vec<MDIncGrp>,
+pub struct DepthIncremental {
+    pub MsgType: String,
+    pub MsgSeqNum: u32,
+    pub SenderCompID: u32,
+    pub MarketSegmentID: u32,
+    pub MDIncGrp: Vec<MDIncGrp>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct MDIncGrp {
-    MDOriginType: u32,
-    MDUpdateAction: u32,
-    MDEntryType: u32,
-    SecurityID: i64,
-    SecurityIDSource: String,
-    MDEntryPx: Option<f64>,
-    MDEntrySize: Option<f64>,
-    NumberOfOrders: Option<u32>,
-    MDPriceLevel: Option<u32>,
-    MDEntryTime: Option<i64>,
-    PotentialSecurityTradingEvent: Option<u32>,
-    QuoteCondition: Option<u32>,
-    TotalBuyQuantity: Option<f64>,
-    TotalSellQuantity: Option<f64>,
-    TradeEntryGrp: Option<TradeEntryGrp>, // Optional group of sub-structure
+pub struct MDIncGrp {
+    pub MDOriginType: u32,
+    pub MDUpdateAction: u32,
+    pub MDEntryType: u32,
+    pub SecurityID: i64,
+    pub SecurityIDSource: String,
+    pub MDEntryPx: Option<f64>,
+    pub MDEntrySize: Option<f64>,
+    pub NumberOfOrders: Option<u32>,
+    pub MDPriceLevel: Option<u32>,
+    pub MDEntryTime: Option<i64>,
+    pub PotentialSecurityTradingEvent: Option<u32>,
+    pub QuoteCondition: Option<u32>,
+    pub TotalBuyQuantity: Option<f64>,
+    pub TotalSellQuantity: Option<f64>,
+    pub TradeEntryGrp: Option<TradeEntryGrp>, // Optional group of sub-structure
 }
 
 #[derive(Debug, Serialize, Deserialize)]

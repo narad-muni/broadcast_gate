@@ -1,14 +1,15 @@
 use std::sync::{atomic::AtomicPtr, Arc};
 
-use super::packet::Packet;
+use super::{packet::Packet, state::McxTokenState};
 
-pub type ProcessingFn = fn(&mut Packet);
+pub type ProcessingFn = fn(&mut Packet, &Work);
 
 #[derive(Debug)]
 pub struct Work {
     pub work_type: WorkType,
     pub processing_fn: ProcessingFn,
     pub atomic_ptr: Option<Arc<AtomicPtr<Packet>>>,
+    pub mcx_state: Option<McxTokenState>,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
