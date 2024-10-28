@@ -1,17 +1,17 @@
 use std::{
     any::type_name,
-    mem::{self, ManuallyDrop, MaybeUninit},
+    mem::{self, zeroed, ManuallyDrop, MaybeUninit},
     ptr,
 };
 
+use serde::{de::DeserializeOwned, Serialize};
+
 use crate::constants::BUF_SIZE;
 
-pub fn bytes_to_struct<T>(s: &[u8]) -> T {
-    let src = s.as_ptr() as *const T;
+pub fn bytes_to_struct<T>(buff: &[u8]) -> T {
+    let buff_ptr = buff.as_ptr() as *const T;
 
-    unsafe {
-        std::ptr::read(src)
-    }
+    unsafe { std::ptr::read(buff_ptr) }
 }
 
 pub fn struct_to_bytes<T>(s: &T, buffer: &mut [u8]) -> usize {
@@ -31,6 +31,18 @@ pub fn struct_to_bytes<T>(s: &T, buffer: &mut [u8]) -> usize {
     }
 
     size
+}
+
+pub fn bytes_to_struct_bincode<T: DeserializeOwned>(buff: &[u8]) -> T {
+    bincode::deserialize_from(buff).unwrap()
+}
+
+pub fn struct_to_bytes_bincode<T: Serialize>(s: &T, buffer: &mut [u8]) -> usize {
+    let slice = bincode::serialize(s).unwrap();
+
+    vec_to_array(&slice, buffer);
+
+    slice.len()
 }
 
 // Safe because of assert
@@ -69,6 +81,12 @@ pub fn create_empty<T>() -> T {
     unsafe { mem::zeroed() }
 }
 
+fn vec_to_array(vec: &Vec<u8>, slice: &mut [u8]) {
+    let len = vec.len().min(slice.len());
+    
+    slice[..len].copy_from_slice(&vec[..len]);
+}
+
 pub fn bytes_to_partial_struct<T>(s: &mut T, buffer: &[u8]) {
     // Get unsafe mutable raw pointer
     let struct_ptr = s as *mut T as *mut u8;
@@ -81,7 +99,6 @@ pub fn bytes_to_partial_struct<T>(s: &mut T, buffer: &[u8]) {
         min_size = buffer.len();
     }
 
-    
     unsafe {
         // Similar to memcpy
         ptr::copy_nonoverlapping(buffer.as_ptr(), struct_ptr, min_size);

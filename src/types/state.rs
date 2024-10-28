@@ -1,4 +1,7 @@
-use std::sync::{atomic::{AtomicBool, AtomicPtr, AtomicU32}, Arc};
+use std::sync::{
+    atomic::{AtomicBool, AtomicPtr, AtomicU32},
+    Arc,
+};
 
 use crossbeam::queue::SegQueue;
 

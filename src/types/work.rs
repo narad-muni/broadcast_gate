@@ -8,6 +8,7 @@ pub type ProcessingFn = fn(&mut Packet, &Work);
 pub struct Work {
     pub work_type: WorkType,
     pub processing_fn: ProcessingFn,
+    pub seq_no: usize,
     pub atomic_ptr: Option<Arc<AtomicPtr<Packet>>>,
     pub mcx_state: Option<McxTokenState>,
 }
@@ -19,7 +20,7 @@ pub enum WorkType {
     NseUncompressed,
     SegmentWise(u8),
     TokenWise(i32),
-    Mcx,
+    McxDepth,
 }
 
 impl WorkType {
@@ -30,7 +31,7 @@ impl WorkType {
             Self::NseUncompressed => 2, // First element of queue is for uncompressed
             Self::SegmentWise(i) => 3 + *i as usize, // each segment has its own queue
             Self::TokenWise(i) => *i as usize, // Shouldn't be used on queue, only on map
-            Self::Mcx => 0,
+            Self::McxDepth => 0,
         }
     }
 }

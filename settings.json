@@ -1,5 +1,5 @@
 {
-  "exchange": "NEQ",
+  "exchange": "MCX",
   "udp_auto_switch": false,
   "udp_switch_timeout": 5,
   "udp_local_ip": "0.0.0.0",
@@ -10,11 +10,12 @@
   "output_udp_ip": "225.0.0.0",
   "output_udp_port": 7813,
   "thread_count": 4,
-  "steps": 100000,
+  "steps": 1,
   "kafka_partition_no": 0,
   "kafka_brokers": "localhost:9092",
   "kafka_topic_name": "rust",
   "kafka_config_path": "kafka_config.json",
-  "output_targets": ["kafka"],
-  "source_ip": "172.18.2.223"
+  "output_targets": ["counter"],
+  "source_ip": "172.18.2.223",
+  "fast_template": "template.xml"
 }

@@ -10,7 +10,8 @@ use crate::{
         packet::Packet,
         packet_structures::bse::{
             build_bse_struct, BcastComplexMarketPicture, BcastDebtMarketPicture, BcastMarketPicture,
-        }, work::Work,
+        },
+        work::Work,
     },
     utils::byte_utils::{bytes_to_partial_struct, bytes_to_struct, create_empty, struct_to_bytes},
 };

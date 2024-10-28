@@ -22,7 +22,8 @@ use crate::{
                 TagMarketPictureBroadcast, TagMessageHeader,
             },
         },
-        settings::Exchange, work::Work,
+        settings::Exchange,
+        work::Work,
     },
     utils::byte_utils::{create_empty, struct_to_bytes},
 };

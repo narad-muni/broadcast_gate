@@ -1,8 +1,8 @@
 use crate::types::work::{ProcessingFn, WorkType};
 
 pub mod bse_worker;
-pub mod nse_worker;
 pub mod mcx_workers;
+pub mod nse_worker;
 
 pub fn get_neq_processing_fn(work_type: &WorkType) -> ProcessingFn {
     match work_type {
@@ -41,7 +41,7 @@ pub fn get_bse_processing_fn(work_type: &WorkType) -> ProcessingFn {
 
 pub fn get_mcx_processing_fn(work_type: &WorkType) -> ProcessingFn {
     match work_type {
-        WorkType::Mcx => mcx_workers::process_mcx_depth,
+        WorkType::McxDepth => mcx_workers::process_mcx_depth,
         _ => panic!("Invalid work type for MCX processing function"),
     }
 }

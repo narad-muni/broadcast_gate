@@ -1,4 +1,8 @@
-use std::{cell::UnsafeCell, collections::{hash_map::Entry, HashMap}, hash::Hash};
+use std::{
+    cell::UnsafeCell,
+    collections::{hash_map::Entry, HashMap},
+    hash::Hash,
+};
 
 pub struct UnsafeHashMap<K, V> {
     pub map: UnsafeCell<HashMap<K, V>>,

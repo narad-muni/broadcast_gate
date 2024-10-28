@@ -1,11 +1,12 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum Message {
     MDPacketHeader(MDPacketHeader),
     FastReset(FastReset),
     DepthSnapshot(DepthSnapshot),
-    DepthSnapshotEmpty,
+    DepthSnapshotEmpty(()),
+    MDIncGrp(MDIncGrp),
     DepthIncremental(DepthIncremental),
     QuoteRequest(QuoteRequest),
     CrossRequest(CrossRequest),
@@ -18,10 +19,10 @@ pub enum Message {
     ComplexInstrumentUpdate(ComplexInstrumentUpdate),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct FastReset {}
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct MDPacketHeader {
     SenderCompID: u32,
     #[serde(with = "serde_bytes")]
@@ -30,7 +31,7 @@ pub struct MDPacketHeader {
     SendingTime: Vec<u8>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DepthSnapshot {
     pub MsgType: String,
     pub MsgSeqNum: Option<u32>,
@@ -49,7 +50,7 @@ pub struct DepthSnapshot {
     pub MDSshGrp: Vec<MDSshGrp>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct MDSshGrp {
     MDOriginType: u32,
     MDEntryType: u32,
@@ -80,7 +81,7 @@ pub struct MDSshGrp {
     TotalNumOfTrades: Option<u32>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct MassInstrumentStateChange {
     MsgType: String,
     MsgSeqNum: u32,
@@ -99,7 +100,7 @@ struct MassInstrumentStateChange {
     LastFragment: u32,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct SecMassStatGrp {
     SecurityID: i64,
     SecurityIDSource: String,
@@ -111,7 +112,7 @@ struct SecMassStatGrp {
     TESSecurityStatus: Option<u32>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct ProductStateChange {
     MsgType: String,
     MsgSeqNum: u32,
@@ -126,7 +127,7 @@ struct ProductStateChange {
     TESTradSesStatus: Option<u32>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct InstrumentStateChange {
     MsgType: String,
     MsgSeqNum: u32,
@@ -144,7 +145,7 @@ struct InstrumentStateChange {
     TESSecurityStatus: Option<u32>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DepthIncremental {
     pub MsgType: String,
     pub MsgSeqNum: u32,
@@ -153,7 +154,7 @@ pub struct DepthIncremental {
     pub MDIncGrp: Vec<MDIncGrp>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MDIncGrp {
     pub MDOriginType: u32,
     pub MDUpdateAction: u32,
@@ -172,7 +173,7 @@ pub struct MDIncGrp {
     pub TradeEntryGrp: Option<TradeEntryGrp>, // Optional group of sub-structure
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct TradeEntryGrp {
     TrdType: Option<u32>,
     AlgorithmicTradeIndicator: Option<u32>,
@@ -192,7 +193,7 @@ struct TradeEntryGrp {
     NonDisclosedTradeVolume: Option<f64>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct ComplexInstrumentUpdate {
     MsgType: String,
     MsgSeqNum: u32,
@@ -210,7 +211,7 @@ struct ComplexInstrumentUpdate {
     TransactTime: i64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct InstrmtLegGrp {
     LegSymbol: u32,
     LegSecurityID: i64,
@@ -221,13 +222,13 @@ struct InstrmtLegGrp {
     LegPrice: Option<f64>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct MarketSegmentGrp {
     MarketSegmentID: u32,
     ImpliedMarketIndicator: u32,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct QuoteRequest {
     MsgType: String,
     MsgSeqNum: u32,
@@ -236,7 +237,7 @@ struct QuoteRequest {
     QuotReqGrp: Vec<QuotReqGrp>, // sequence of quote request group
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct QuotReqGrp {
     SecurityID: i64,
     SecurityIDSource: String,
@@ -245,7 +246,7 @@ struct QuotReqGrp {
     TransactTime: i64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct CrossRequest {
     MsgType: String,
     MsgSeqNum: u32,
@@ -260,13 +261,13 @@ struct CrossRequest {
     TransactTime: i64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct CrossRequestSideGrp {
     Side: Option<u32>,
     InputSource: u32,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct IndexStats {
     MsgType: String,
     MsgSeqNum: Option<u32>,
@@ -285,7 +286,7 @@ struct IndexStats {
     TransactTime: i64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct TopOfBookImplied {
     MsgType: String,
     MsgSeqNum: u32,
@@ -294,7 +295,7 @@ struct TopOfBookImplied {
     MDIncGrp: Vec<MDEntry>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct MDEntry {
     MDUpdateAction: u32,
     MDEntryType: u32,
@@ -308,7 +309,7 @@ struct MDEntry {
     QuoteCondition: Option<u32>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct FlexibleInstrumentUpdate {
     MsgType: String,
     MsgSeqNum: u32,
@@ -329,7 +330,7 @@ struct FlexibleInstrumentUpdate {
     TransactTime: i64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct MarketSegmentGrp2 {
     MarketSegmentID: u32,
 }

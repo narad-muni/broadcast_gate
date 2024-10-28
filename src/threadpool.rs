@@ -7,7 +7,7 @@ use std::{
 use threadpool::ThreadPool;
 
 use crate::{
-    global::{OUTPUT, TPOOL_QUEUE, WORK_LOCKS, PACKET_QUEUES},
+    global::{OUTPUT, PACKET_QUEUES, TPOOL_QUEUE, WORK_LOCKS},
     types::work::{Work, WorkType},
 };
 
@@ -32,7 +32,7 @@ impl ThreadPoolMaster {
                     match work.work_type {
                         // Work on map for token wise
                         WorkType::TokenWise(_) => work_on_map(work),
-                        WorkType::Mcx => work_on_mcx(work),
+                        WorkType::McxDepth => work_on_mcx(work),
                         // Work on queue for other types
                         _ => work_on_queue(work),
                     }
@@ -59,7 +59,10 @@ pub fn work_on_map(work: Work) {
 }
 
 pub fn work_on_mcx(work: Work) {
-    let mcx_state = work.mcx_state.clone().expect("MCX state required for processing mcx work");
+    let mcx_state = work
+        .mcx_state
+        .clone()
+        .expect("MCX state required for processing mcx work");
     let packet_queue = mcx_state.packet_queue;
     let work_lock = mcx_state.work_lock;
 

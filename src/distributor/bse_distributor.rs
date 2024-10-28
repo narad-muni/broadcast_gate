@@ -1,6 +1,9 @@
 use crate::{
     global::STATISTICS,
-    types::{packet::Packet, work::{Work, WorkType}},
+    types::{
+        packet::Packet,
+        work::{Work, WorkType},
+    },
     utils::byte_utils::bytes_to_struct,
     workers::get_bse_processing_fn,
 };
@@ -36,6 +39,7 @@ impl Distribute for BseDistributor {
             processing_fn,
             atomic_ptr: None,
             mcx_state: None,
+            seq_no: 0,
         };
 
         super::distribute_to_queue(packet, work);

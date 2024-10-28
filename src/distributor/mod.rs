@@ -9,7 +9,7 @@ use std::{
 
 use crate::types::state::NseTokenState;
 use crate::{
-    global::{NSE_TOKEN_WISE_MAP, TPOOL_QUEUE, WORK_LOCKS, PACKET_QUEUES},
+    global::{NSE_TOKEN_WISE_MAP, PACKET_QUEUES, TPOOL_QUEUE, WORK_LOCKS},
     types::{packet::Packet, work::Work},
 };
 
@@ -99,7 +99,7 @@ pub fn distribute_to_map(packet: Packet, mut work: Work) {
         let atomic_ptr = Arc::new(AtomicPtr::new(new_packet_ptr));
         work.atomic_ptr = Some(atomic_ptr.clone());
 
-        NSE_TOKEN_WISE_MAP.insert(work.work_type.get_id(), NseTokenState{ptr: atomic_ptr});
+        NSE_TOKEN_WISE_MAP.insert(work.work_type.get_id(), NseTokenState { ptr: atomic_ptr });
 
         TPOOL_QUEUE.push(work);
     }

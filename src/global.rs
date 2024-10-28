@@ -1,9 +1,6 @@
 use std::{
     mem::size_of,
-    sync::{
-        atomic::{AtomicBool, AtomicPtr},
-        Arc, OnceLock,
-    },
+    sync::{atomic::AtomicBool, OnceLock},
 };
 
 use crate::{
@@ -11,7 +8,12 @@ use crate::{
     output::Output,
     statistics::Statistics,
     types::{
-        packet::Packet, packet_structures::neq::BcastHeaders, settings::{Exchange, Settings}, state::{McxTokenState, NseTokenState}, unsafe_hashmap::UnsafeHashMap, work::Work
+        packet::Packet,
+        packet_structures::neq::BcastHeaders,
+        settings::{Exchange, Settings},
+        state::{McxTokenState, NseTokenState},
+        unsafe_hashmap::UnsafeHashMap,
+        work::Work,
     },
 };
 use crossbeam::queue::SegQueue;
@@ -32,9 +34,7 @@ pub static NSE_HEADER_SIZE: usize = size_of::<BcastHeaders>();
 pub static STATISTICS: Statistics = Statistics::new();
 
 lazy_static! {
-    pub static ref NSE_TOKEN_WISE_MAP: UnsafeHashMap<usize, NseTokenState> =
-        UnsafeHashMap::new();
-    pub static ref MCX_TOKEN_WISE_MAP: UnsafeHashMap<usize, McxTokenState> =
-        UnsafeHashMap::new();
+    pub static ref NSE_TOKEN_WISE_MAP: UnsafeHashMap<usize, NseTokenState> = UnsafeHashMap::new();
+    pub static ref MCX_TOKEN_WISE_MAP: UnsafeHashMap<usize, McxTokenState> = UnsafeHashMap::new();
     pub static ref OUTPUT: Output = Output::new();
 }

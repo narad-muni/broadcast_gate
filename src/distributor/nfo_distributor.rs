@@ -1,5 +1,8 @@
 use crate::{
-    types::{packet::Packet, work::{Work, WorkType}},
+    types::{
+        packet::Packet,
+        work::{Work, WorkType},
+    },
     workers::get_nfo_processing_fn,
 };
 
@@ -27,6 +30,7 @@ impl Distribute for NfoDistributor {
                 processing_fn,
                 atomic_ptr: None,
                 mcx_state: None,
+                seq_no: 0,
             };
 
             if let WorkType::TokenWise(_) = work_type {

@@ -1,36 +1,28 @@
-#[derive(Debug)]
-struct A {
-    a: i32,
-    b: i32,
+struct ScopeCall<F: FnMut()> {
+    c: F,
+}
+impl<F: FnMut()> Drop for ScopeCall<F> {
+    fn drop(&mut self) {
+        (self.c)();
+    }
 }
 
-#[derive(Debug)]
-struct B {
-    a: u32,
-    b: i32,
-}
-#[derive(Debug)]
-pub enum E{
-    A(A),
-    B(B),
-}
-
-#[derive(Debug)]
-struct C {
-    arr: [u8; 1024],
+macro_rules! defer {
+    ($e:expr) => {
+        let _scope_call = ScopeCall {
+            c: || -> () {
+                $e;
+            },
+        };
+    };
 }
 
 fn main() {
-    let mut x = E::B(B{a:10,b:50});
-    
-    let c = C {
-        arr: *cast(&mut x)
-    };
-    
-    println!("{:?}", c);
-    
-}
-
-fn cast<F, T>(from: &mut F) -> &mut T {
-    unsafe { &mut *(from as *mut F as *mut T) }
+    let x = String::new();
+    defer!(println!("defer 1"));
+    defer!({
+        println!("defer 2");
+        println!("inside defer {}", x)
+    });
+    println!("normal execution {}", x);
 }
