@@ -27,7 +27,7 @@ use crate::{
     utils::byte_utils::{create_empty, struct_to_bytes},
 };
 
-pub fn cast_and_twiddle_nfo(packet: &mut Packet, work: &Work) {
+pub fn cast_and_twiddle_nfo(packet: &mut Packet, _work: &Work) {
     let trans_code = BcastHeaders::get_trans_code(&packet.0);
 
     if let Some(mut nfo_struct) = build_nfo_struct(trans_code, &packet.0[SKIP_BYTES..]) {
@@ -36,17 +36,17 @@ pub fn cast_and_twiddle_nfo(packet: &mut Packet, work: &Work) {
         // Convert struct to custom struct for 7208 and 7200
         if let NfoBroadcastTransactionMapping::BcastMboMbpUpdate(s) = &mut nfo_struct {
             let st = convert_mbo_mbp(s, &mut packet.1);
-            struct_to_bytes(&st, &mut packet.0);
+            packet.1 = struct_to_bytes(&st, &mut packet.0);
         } else if let NfoBroadcastTransactionMapping::BcastOnlyMbp(s) = &mut nfo_struct {
             let st = convert_only_mbp(s, &mut packet.1);
-            struct_to_bytes(&st, &mut packet.0);
+            packet.1 = struct_to_bytes(&st, &mut packet.0);
         } else {
             nfo_struct.to_bytes(&mut packet.0);
         }
     };
 }
 
-pub fn cast_and_twiddle_neq(packet: &mut Packet, work: &Work) {
+pub fn cast_and_twiddle_neq(packet: &mut Packet, _work: &Work) {
     let trans_code = BcastHeaders::get_trans_code(&packet.0);
 
     if let Some(mut neq_struct) = build_neq_struct(trans_code, &packet.0[SKIP_BYTES..]) {
@@ -55,20 +55,20 @@ pub fn cast_and_twiddle_neq(packet: &mut Packet, work: &Work) {
         // Convert struct to custom struct for 7208 and 7200
         if let NeqBroadcastTransactionMapping::BcastMboMbpCedtc(s) = &mut neq_struct {
             let st = convert_mbo_mbp_eq(s, &mut packet.1);
-            struct_to_bytes(&st, &mut packet.0);
+            packet.1 = struct_to_bytes(&st, &mut packet.0);
         } else if let NeqBroadcastTransactionMapping::BcastOnlyMbpCedtc(s) = &mut neq_struct {
             let st = convert_only_mbp_cedtc(s, &mut packet.1);
-            struct_to_bytes(&st, &mut packet.0);
+            packet.1 = struct_to_bytes(&st, &mut packet.0);
         } else if let NeqBroadcastTransactionMapping::BcastOnlyMbp(s) = &mut neq_struct {
             let st = convert_only_mbp_eq(s, &mut packet.1);
-            struct_to_bytes(&st, &mut packet.0);
+            packet.1 = struct_to_bytes(&st, &mut packet.0);
         } else {
             neq_struct.to_bytes(&mut packet.0);
         };
     }
 }
 
-pub fn cast_and_twiddle_ncd(packet: &mut Packet, work: &Work) {
+pub fn cast_and_twiddle_ncd(packet: &mut Packet, _work: &Work) {
     let trans_code = BcastHeaders::get_trans_code(&packet.0);
 
     if let Some(mut ncd_struct) = build_ncd_struct(trans_code, &packet.0[SKIP_BYTES..]) {
@@ -78,11 +78,11 @@ pub fn cast_and_twiddle_ncd(packet: &mut Packet, work: &Work) {
         if let NcdBroadcastTransactionMapping::BcastMboMbpUpdate(s) = &mut ncd_struct {
             let st = convert_mbo_mbp(s, &mut packet.1);
 
-            struct_to_bytes(&st, &mut packet.0);
+            packet.1 = struct_to_bytes(&st, &mut packet.0);
         } else if let NcdBroadcastTransactionMapping::BcastOnlyMbp(s) = &mut ncd_struct {
             let st = convert_only_mbp(s, &mut packet.1);
 
-            struct_to_bytes(&st, &mut packet.0);
+            packet.1 = struct_to_bytes(&st, &mut packet.0);
         } else {
             ncd_struct.to_bytes(&mut packet.0);
         };

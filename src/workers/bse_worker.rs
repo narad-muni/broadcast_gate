@@ -15,7 +15,7 @@ use crate::{
     utils::byte_utils::{bytes_to_partial_struct, bytes_to_struct, create_empty, struct_to_bytes},
 };
 
-pub fn process_bse_compressed(packet: &mut Packet, work: &Work) {
+pub fn process_bse_compressed(packet: &mut Packet, _work: &Work) {
     let mut trans_code: i32 = bytes_to_struct(&packet.0);
     // Twiddle
     trans_code = trans_code.to_be();
@@ -768,7 +768,7 @@ pub fn decompress_bcast_debt_mbp(packet: &mut Packet) {
     struct_to_bytes(&debt_market_picture, &mut packet.0);
 }
 
-pub fn process_bse_uncompressed(packet: &mut Packet, work: &Work) {
+pub fn process_bse_uncompressed(packet: &mut Packet, _work: &Work) {
     let mut trans_code: i32 = bytes_to_struct(&packet.0);
     // Twiddle
     trans_code = trans_code.to_be();
