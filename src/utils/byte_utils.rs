@@ -1,20 +1,24 @@
 use std::{
-    any::type_name,
-    mem::{self, zeroed, ManuallyDrop, MaybeUninit},
+    mem::{self, MaybeUninit},
     ptr,
 };
 
-use serde::{de::DeserializeOwned, Serialize};
-
 use crate::constants::BUF_SIZE;
 
-pub fn bytes_to_struct<T>(buff: &[u8]) -> T {
-    let buff_ptr = buff.as_ptr() as *const T;
+pub fn bytes_to_struct<T: Copy>(buff: &[u8]) -> T {
+    let mut dst: T = create_uninit();
 
-    unsafe { std::ptr::read(buff_ptr) }
+    let dst_ptr = &mut dst as *mut T as *mut u8;
+
+    unsafe {
+        // Similar to memcpy
+        ptr::copy_nonoverlapping(buff.as_ptr(), dst_ptr, size_of::<T>());
+    };
+
+    dst
 }
 
-pub fn struct_to_bytes<T>(s: &T, buffer: &mut [u8]) -> usize {
+pub fn struct_to_bytes<T: Copy>(s: &T, buffer: &mut [u8]) -> usize {
     let mut size = std::mem::size_of::<T>();
 
     // Ensure the buffer is large enough
@@ -33,44 +37,27 @@ pub fn struct_to_bytes<T>(s: &T, buffer: &mut [u8]) -> usize {
     size
 }
 
-pub fn bytes_to_struct_bincode<T: DeserializeOwned>(buff: &[u8]) -> T {
-    bincode::deserialize_from(buff).unwrap()
+pub fn bytes_to_struct_heap<T>(buff: &[u8]) -> T {
+    let buff_ptr = buff.as_ptr() as *const T;
+
+    unsafe { std::ptr::read(buff_ptr) }
 }
 
-pub fn struct_to_bytes_bincode<T: Serialize>(s: &T, buffer: &mut [u8]) -> usize {
-    let slice = bincode::serialize(s).unwrap();
-
-    vec_to_array(&slice, buffer);
-
-    slice.len()
-}
-
-// Safe because of assert
-pub fn cast<T, F>(input: F) -> T {
-    // Ensure that T and U have the same size to avoid undefined behavior
-    assert_eq!(
-        std::mem::size_of::<T>(),
-        std::mem::size_of::<F>(),
-        "Cannot cast from smaller struct {} to larger struct {}",
-        type_name::<F>(),
-        type_name::<T>()
-    );
-
+pub fn struct_to_bytes_heap<T>(src: T, dst: &mut [u8]) -> usize {
+    let struct_ptr = &src as *const T as *const u8;
     // Use `ManuallyDrop` to take ownership of `input` without dropping it
-    let input = ManuallyDrop::new(input);
+    mem::forget(src);
 
-    // Use `ptr::read` to reinterpret the bytes of `input` as type `U`
-    unsafe { ptr::read(&*input as *const F as *const T) }
-}
+    let mut size = size_of::<T>();
+    
+    size = size.min(dst.len());
 
-// Allows to cast from smaller structure to larger structure
-// Accessing field outside of F's size will cause segfault
-pub unsafe fn cast_unsafe<F, T>(input: F) -> T {
-    // Use `ManuallyDrop` to take ownership of `input` without dropping it
-    let input = ManuallyDrop::new(input);
+    unsafe {
+        // Similar to memcpy
+        ptr::copy_nonoverlapping(struct_ptr, dst.as_mut_ptr(), size);
+    };
 
-    // Use `ptr::read` to reinterpret the bytes of `input` as type `U`
-    ptr::read(&*input as *const F as *const T)
+    size
 }
 
 pub fn uninit_to_buf(src: &[MaybeUninit<u8>; BUF_SIZE]) -> [u8; BUF_SIZE] {
@@ -81,13 +68,11 @@ pub fn create_empty<T>() -> T {
     unsafe { mem::zeroed() }
 }
 
-fn vec_to_array(vec: &Vec<u8>, slice: &mut [u8]) {
-    let len = vec.len().min(slice.len());
-    
-    slice[..len].copy_from_slice(&vec[..len]);
+pub fn create_uninit<T>() -> T {
+    unsafe { MaybeUninit::uninit().assume_init() }
 }
 
-pub fn bytes_to_partial_struct<T>(s: &mut T, buffer: &[u8]) {
+pub fn bytes_to_partial_struct<T: Copy>(s: &mut T, buffer: &[u8]) {
     // Get unsafe mutable raw pointer
     let struct_ptr = s as *mut T as *mut u8;
 
@@ -105,6 +90,6 @@ pub fn bytes_to_partial_struct<T>(s: &mut T, buffer: &[u8]) {
     };
 }
 
-pub fn bytes_to_struct_mut<T>(buf: &mut [u8]) -> &mut T {
+pub fn bytes_to_struct_mut<T: Copy>(buf: &mut [u8]) -> &mut T {
     unsafe { &mut *(buf.as_mut_ptr() as *mut T) }
 }

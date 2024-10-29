@@ -14,7 +14,7 @@ use crate::{
         packet_structures::mcx::{DepthIncremental, DepthSnapshot, Message},
         state::McxTokenState,
         work::{Work, WorkType},
-    }, utils::byte_utils::struct_to_bytes_bincode, workers::get_mcx_processing_fn
+    }, utils::byte_utils::struct_to_bytes_heap, workers::get_mcx_processing_fn
 };
 
 use super::Distribute;
@@ -106,7 +106,7 @@ impl McxDistributor {
 
         // Create packet
         let mut packet = Packet([0; BUF_SIZE], BUF_SIZE);
-        packet.1 = struct_to_bytes_bincode(&depth_snapshot, &mut packet.0);
+        packet.1 = struct_to_bytes_heap(&depth_snapshot, &mut packet.0);
 
         // Create work
         let work = Work {
@@ -132,7 +132,7 @@ impl McxDistributor {
         if mcx_state.packet_queue.len() == 0 {
             // Create message packet
             let mut empty_packet = Packet([0; BUF_SIZE], BUF_SIZE);
-            empty_packet.1 = struct_to_bytes_bincode(&Message::DepthSnapshotEmpty(()), &mut empty_packet.0);
+            empty_packet.1 = struct_to_bytes_heap(&Message::DepthSnapshotEmpty(()), &mut empty_packet.0);
 
             mcx_state.packet_queue.push(empty_packet);
 
@@ -177,7 +177,7 @@ impl McxDistributor {
 
             // Create message packet
             let mut packet = Packet([0; BUF_SIZE], BUF_SIZE);
-            packet.1 = struct_to_bytes_bincode(&Message::MDIncGrp(message), &mut packet.0);
+            packet.1 = struct_to_bytes_heap(&Message::MDIncGrp(message), &mut packet.0);
 
             mcx_state.packet_queue.push(packet);
 

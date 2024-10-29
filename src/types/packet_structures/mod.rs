@@ -8,7 +8,7 @@ pub mod ncd; // NSE Commodities
 pub mod neq; // NSE Equity
 pub mod nfo; // NSE FAO
 
-#[derive(Debug, Twiddle)]
+#[derive(Debug, Twiddle, Clone, Copy)]
 #[repr(C, packed(2))]
 pub struct PackData {
     pub net_id: u8,

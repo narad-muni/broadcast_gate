@@ -3,7 +3,7 @@ use std::{ptr, sync::atomic::Ordering};
 use crate::{constants::BUF_SIZE, types::{
         packet::Packet,
         packet_structures::mcx::{DepthSnapshot, Message},
-        work::Work}, utils::byte_utils::{bytes_to_struct_bincode, struct_to_bytes_bincode}};
+        work::Work}, utils::byte_utils::{bytes_to_struct_heap, struct_to_bytes_heap}};
 
 pub fn process_mcx_depth(packet: &mut Packet, work: &Work) {
     // Swap atomic ptr with null, and add atomic ptr to work
@@ -12,9 +12,9 @@ pub fn process_mcx_depth(packet: &mut Packet, work: &Work) {
     // Swap atomic ptr with null
     let ptr = mcx_state.ptr.swap(ptr::null_mut(), Ordering::SeqCst);
     let mut ptr = unsafe { Box::from_raw(ptr) };
-    let mut snapshot: DepthSnapshot = bytes_to_struct_bincode(&ptr.0[..]);
+    let mut snapshot: DepthSnapshot = bytes_to_struct_heap(&ptr.0[..]);
 
-    let message: Message = bytes_to_struct_bincode(&packet.0[..]);
+    let message: Message = bytes_to_struct_heap(&packet.0[..]);
 
     if let Message::DepthSnapshotEmpty(()) = message {
         mcx_state.seq_no.store(work.seq_no as u32, Ordering::SeqCst);
@@ -45,7 +45,7 @@ pub fn process_mcx_depth(packet: &mut Packet, work: &Work) {
     // Put modified data back into atomic ptr
     let mut packet = Packet([0; BUF_SIZE], BUF_SIZE);
 
-    packet.1 = struct_to_bytes_bincode(&snapshot, &mut packet.0);
+    packet.1 = struct_to_bytes_heap(&snapshot, &mut packet.0);
 
     *ptr = packet;
 
