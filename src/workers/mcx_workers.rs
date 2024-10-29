@@ -3,7 +3,7 @@ use std::{ptr, sync::atomic::Ordering};
 use crate::{constants::BUF_SIZE, types::{
         packet::Packet,
         packet_structures::mcx::{DepthSnapshot, Message},
-        work::Work}, utils::byte_utils::{bytes_to_struct_heap, struct_to_bytes_heap}};
+        work::Work}, utils::byte_utils::{bytes_to_struct, struct_to_bytes_heap}};
 
 pub fn process_mcx_depth(packet: &mut Packet, work: &Work) {
     // Swap atomic ptr with null, and add atomic ptr to work
@@ -12,9 +12,9 @@ pub fn process_mcx_depth(packet: &mut Packet, work: &Work) {
     // Swap atomic ptr with null
     let ptr = mcx_state.ptr.swap(ptr::null_mut(), Ordering::SeqCst);
     let mut ptr = unsafe { Box::from_raw(ptr) };
-    let mut snapshot: DepthSnapshot = bytes_to_struct_heap(&ptr.0[..]);
+    let mut snapshot: DepthSnapshot = bytes_to_struct(&ptr.0[..]);
 
-    let message: Message = bytes_to_struct_heap(&packet.0[..]);
+    let message: Message = bytes_to_struct(&packet.0[..]);
 
     if let Message::DepthSnapshotEmpty(()) = message {
         mcx_state.seq_no.store(work.seq_no as u32, Ordering::SeqCst);
@@ -28,17 +28,16 @@ pub fn process_mcx_depth(packet: &mut Packet, work: &Work) {
             Ordering::SeqCst,
         );
 
-        println!("{:?}", md_incr_grp);
+        println!("{:#?}", md_incr_grp);
 
         if seq_no_update.is_err() {
             // Put ptr back into atomic ptr
-            mcx_state.ptr.swap(Box::into_raw(ptr), Ordering::SeqCst);
+            let _ = mcx_state.ptr.compare_exchange(ptr::null_mut(), Box::into_raw(ptr), Ordering::SeqCst, Ordering::SeqCst);
             return;
         }
 
         snapshot.MsgSeqNum = Some(work.seq_no as u32);
     } else {
-        mcx_state.ptr.swap(Box::into_raw(ptr), Ordering::SeqCst);
         todo!();
     }
 
@@ -49,5 +48,5 @@ pub fn process_mcx_depth(packet: &mut Packet, work: &Work) {
 
     *ptr = packet;
 
-    mcx_state.ptr.swap(Box::into_raw(ptr), Ordering::SeqCst);
+    let _ = mcx_state.ptr.compare_exchange(ptr::null_mut(), Box::into_raw(ptr), Ordering::SeqCst, Ordering::SeqCst);
 }

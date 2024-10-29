@@ -5,19 +5,6 @@ use std::{
 
 use crate::constants::BUF_SIZE;
 
-pub fn bytes_to_struct<T: Copy>(buff: &[u8]) -> T {
-    let mut dst: T = create_uninit();
-
-    let dst_ptr = &mut dst as *mut T as *mut u8;
-
-    unsafe {
-        // Similar to memcpy
-        ptr::copy_nonoverlapping(buff.as_ptr(), dst_ptr, size_of::<T>());
-    };
-
-    dst
-}
-
 pub fn struct_to_bytes<T: Copy>(s: &T, buffer: &mut [u8]) -> usize {
     let mut size = std::mem::size_of::<T>();
 
@@ -37,12 +24,6 @@ pub fn struct_to_bytes<T: Copy>(s: &T, buffer: &mut [u8]) -> usize {
     size
 }
 
-pub fn bytes_to_struct_heap<T>(buff: &[u8]) -> T {
-    let buff_ptr = buff.as_ptr() as *const T;
-
-    unsafe { std::ptr::read(buff_ptr) }
-}
-
 pub fn struct_to_bytes_heap<T>(src: T, dst: &mut [u8]) -> usize {
     let struct_ptr = &src as *const T as *const u8;
     // Use `ManuallyDrop` to take ownership of `input` without dropping it
@@ -58,6 +39,12 @@ pub fn struct_to_bytes_heap<T>(src: T, dst: &mut [u8]) -> usize {
     };
 
     size
+}
+
+pub fn bytes_to_struct<T>(buff: &[u8]) -> T {
+    let buff_ptr = buff.as_ptr() as *const T;
+
+    unsafe { std::ptr::read(buff_ptr) }
 }
 
 pub fn uninit_to_buf(src: &[MaybeUninit<u8>; BUF_SIZE]) -> [u8; BUF_SIZE] {

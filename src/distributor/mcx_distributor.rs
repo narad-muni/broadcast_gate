@@ -104,9 +104,11 @@ impl McxDistributor {
             return;
         }
 
+        let snapshot_seq_no = depth_snapshot.MsgSeqNum.unwrap_or(0);
+
         // Create packet
         let mut packet = Packet([0; BUF_SIZE], BUF_SIZE);
-        packet.1 = struct_to_bytes_heap(&depth_snapshot, &mut packet.0);
+        packet.1 = struct_to_bytes_heap(depth_snapshot, &mut packet.0);
 
         // Create work
         let work = Work {
@@ -114,7 +116,7 @@ impl McxDistributor {
             processing_fn: get_mcx_processing_fn(&WorkType::McxDepth),
             atomic_ptr: None,
             mcx_state: Some(mcx_state.clone()),
-            seq_no: depth_snapshot.MsgSeqNum.unwrap_or(0) as usize,
+            seq_no: snapshot_seq_no as usize,
         };
 
         // Swap new packet in atomic ptr
@@ -132,7 +134,7 @@ impl McxDistributor {
         if mcx_state.packet_queue.len() == 0 {
             // Create message packet
             let mut empty_packet = Packet([0; BUF_SIZE], BUF_SIZE);
-            empty_packet.1 = struct_to_bytes_heap(&Message::DepthSnapshotEmpty(()), &mut empty_packet.0);
+            empty_packet.1 = struct_to_bytes_heap(Message::DepthSnapshotEmpty(()), &mut empty_packet.0);
 
             mcx_state.packet_queue.push(empty_packet);
 
@@ -177,7 +179,7 @@ impl McxDistributor {
 
             // Create message packet
             let mut packet = Packet([0; BUF_SIZE], BUF_SIZE);
-            packet.1 = struct_to_bytes_heap(&Message::MDIncGrp(message), &mut packet.0);
+            packet.1 = struct_to_bytes_heap(Message::MDIncGrp(message), &mut packet.0);
 
             mcx_state.packet_queue.push(packet);
 
