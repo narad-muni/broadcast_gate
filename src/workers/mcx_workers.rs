@@ -82,9 +82,17 @@ pub fn add_depth(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp) {
         .iter_mut()
         .position(|mdssh_grp| {
             mdssh_grp.MDPriceLevel == Some(level - 1) && mdssh_grp.MDEntryType == MCX_BID
-        })
-        .expect("Unable to find position to add")
-        + 1;
+        });
+
+    let pos = if pos.is_none() {
+        if entry_type == MCX_BID {
+            0
+        } else {
+            depth_snapshot.MDSshGrp.len()
+        }
+    } else {
+        pos.unwrap() + 1
+    };
 
     depth_snapshot.MDSshGrp.insert(pos, new_md_ssh_grp);
 
