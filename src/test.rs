@@ -1,63 +1,58 @@
-use std::{
-    mem::{self},
-    ptr,
-};
-
-#[derive(Debug)]
-struct St {
-    vec: Vec<u8>,
-    str: String,
+struct Depth {
+    action: Action,
+    level: u32,
 }
 
-impl St {
-    fn new() -> Self {
-        Self {
-            vec: vec![1, 4, 6, 2, 7],
-            str: "Hello World".to_string(),
-        }
-    }
+#[derive(Debug, PartialEq)]
+enum Action {
+    Bid,
+    Ask,
 }
 
-impl Drop for St {
-    fn drop(&mut self) {
-        println!("Dropping");
-    }
-}
-
-pub fn bytes_to_struct_bincode<T>(buff: &[u8]) -> T {
-    let buff_ptr = buff.as_ptr() as *const T;
-
-    unsafe { std::ptr::read(buff_ptr) }
-}
-
-pub fn struct_to_bytes_bincode<T>(src: T, dst: &mut [u8]) -> usize {
-    let struct_ptr = &src as *const T as *const u8;
-    // Use `ManuallyDrop` to take ownership of `input` without dropping it
-    mem::forget(src);
-
-    let mut size = size_of::<T>();
-
-    size = size.min(dst.len());
-
-    unsafe {
-        // Similar to memcpy
-        ptr::copy_nonoverlapping(struct_ptr, dst.as_mut_ptr(), size);
-    };
-
-    size
-}
 fn main() {
-    let mut buf: [u8; 1024] = [0; 1024];
+    let depth = vec![
+        Depth {
+            action: Action::Bid,
+            level: 1,
+        },
+        Depth {
+            action: Action::Bid,
+            level: 2,
+        },
+        Depth {
+            action: Action::Bid,
+            level: 3,
+        },
+    ];
 
-    {
-        let st = St::new();
+    println!("{:?}", get_new_depth_idx(
+        &depth,
+        Depth {
+            action: Action::Ask,
+            level: 1,
+        }
+    ));
+}
 
-        struct_to_bytes_bincode(st, &mut buf);
+fn get_new_depth_idx(depth: &Vec<Depth>, new_depth: Depth) -> u32 {
+    let mut pos = 0;
+    let mut started = false;
+
+    for d in depth {
+
+        if new_depth.action == d.action {
+            started = true;
+        }
+
+        if started && d.action != new_depth.action {
+            break;
+        }
+
+        if d.level >= new_depth.level && started {
+            break;
+        }
+        pos += 1;
     }
 
-    let st: St = bytes_to_struct_bincode(&buf);
-
-    buf = [0; 1024];
-
-    println!("{:?}", st);
+    pos
 }

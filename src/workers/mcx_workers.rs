@@ -1,4 +1,4 @@
-use std::{ptr, sync::atomic::Ordering};
+use std::{ptr, sync::atomic::Ordering, u32};
 
 use crate::{
     constants::MCX_BID,
@@ -70,29 +70,11 @@ pub fn process_mcx_depth(packet: &mut Packet, work: &Work) {
 }
 
 pub fn add_depth(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp) {
-    let level = md_incr_grp
-        .MDPriceLevel
-        .expect("MDPriceLevel must be present for add");
     let entry_type = md_incr_grp.MDEntryType;
 
     let new_md_ssh_grp = MDSshGrp::from_md_incr_grp(md_incr_grp);
 
-    let pos = depth_snapshot
-        .MDSshGrp
-        .iter_mut()
-        .position(|mdssh_grp| {
-            mdssh_grp.MDPriceLevel == Some(level - 1) && mdssh_grp.MDEntryType == MCX_BID
-        });
-
-    let pos = if pos.is_none() {
-        if entry_type == MCX_BID {
-            0
-        } else {
-            depth_snapshot.MDSshGrp.len()
-        }
-    } else {
-        pos.unwrap() + 1
-    };
+    let pos = get_new_depth_idx(&depth_snapshot.MDSshGrp, &new_md_ssh_grp);
 
     depth_snapshot.MDSshGrp.insert(pos, new_md_ssh_grp);
 
@@ -217,4 +199,27 @@ pub fn overlay_depth(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp)
             .or(mdssh_grp.PotentialSecurityTradingEvent);
         mdssh_grp.QuoteCondition = md_incr_grp.QuoteCondition.or(mdssh_grp.QuoteCondition);
     });
+}
+
+fn get_new_depth_idx(depths: &Vec<MDSshGrp>, new_depth: &MDSshGrp) -> usize {
+    let mut pos = 0;
+    let mut entry_started = false;
+
+    for depth in depths {
+
+        if new_depth.MDEntryType == depth.MDEntryType {
+            entry_started = true;
+        }
+
+        if entry_started && depth.MDEntryType != new_depth.MDEntryType {
+            break;
+        }
+
+        if depth.MDPriceLevel.unwrap_or(u32::MAX) >= new_depth.MDPriceLevel.unwrap() && entry_started {
+            break;
+        }
+        pos += 1;
+    }
+
+    pos
 }
