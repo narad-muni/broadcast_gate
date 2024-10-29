@@ -1,7 +1,5 @@
 use std::{
-    alloc::{dealloc, Layout},
-    fs,
-    sync::atomic::Ordering,
+    fs, ptr::drop_in_place, sync::atomic::Ordering
 };
 
 use bytes::Bytes;
@@ -104,20 +102,18 @@ impl McxDistributor {
             return;
         }
 
-        let snapshot_seq_no = depth_snapshot.MsgSeqNum.unwrap_or(0);
-
-        // Create packet
-        let mut packet = Packet([0; BUF_SIZE], BUF_SIZE);
-        packet.1 = struct_to_bytes_heap(depth_snapshot, &mut packet.0);
-
         // Create work
         let work = Work {
             work_type: WorkType::McxDepth,
             processing_fn: get_mcx_processing_fn(&WorkType::McxDepth),
             atomic_ptr: None,
             mcx_state: Some(mcx_state.clone()),
-            seq_no: snapshot_seq_no as usize,
+            seq_no: depth_snapshot.MsgSeqNum.unwrap_or(0) as usize,
         };
+
+        // Create packet
+        let mut packet = Packet([0; BUF_SIZE], BUF_SIZE);
+        packet.1 = struct_to_bytes_heap(depth_snapshot, &mut packet.0);
 
         // Swap new packet in atomic ptr
         let new_packet_ptr = Box::into_raw(Box::new(packet));
@@ -126,7 +122,7 @@ impl McxDistributor {
         // Free old packet
         if !old_packet_ptr.is_null() {
             unsafe {
-                dealloc(old_packet_ptr as *mut u8, Layout::new::<Packet>());
+                drop_in_place(old_packet_ptr);
             }
         }
 

@@ -21,6 +21,8 @@ pub fn process_mcx_depth(packet: &mut Packet, work: &Work) {
 
         snapshot.MsgSeqNum = Some(work.seq_no as u32);
     } else if let Message::MDIncGrp(md_incr_grp) = message {
+
+        // Update seq no only if it is in sequence
         let seq_no_update = mcx_state.seq_no.compare_exchange(
             (work.seq_no - 1) as u32,
             work.seq_no as u32,

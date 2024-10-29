@@ -1,10 +1,8 @@
+use std::ptr::drop_in_place;
 use std::thread::{self, JoinHandle};
-use std::{
-    alloc::{dealloc, Layout},
-    sync::{
-        atomic::{AtomicPtr, Ordering},
-        Arc,
-    },
+use std::sync::{
+    atomic::{AtomicPtr, Ordering},
+    Arc,
 };
 
 use crate::types::state::NseTokenState;
@@ -92,7 +90,7 @@ pub fn distribute_to_map(packet: Packet, mut work: Work) {
             // means it is still allocated in heap
             // manually create box from it and drop
             unsafe {
-                dealloc(old_packet_ptr as *mut u8, Layout::new::<Packet>());
+                drop_in_place(old_packet_ptr);
             }
         }
     } else {
