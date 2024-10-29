@@ -44,10 +44,6 @@ pub fn process_mcx_depth(packet: &mut Packet, work: &Work) {
             return;
         }
 
-        if md_incr_grp.MDUpdateAction == 0 {
-            println!("{:#?}\n\n{:#?}\n\n\n", snapshot, md_incr_grp);
-        }
-
         // Perform update based on MDUpdateAction
         match md_incr_grp.MDUpdateAction {
             0 => add_depth(snapshot, &md_incr_grp),
@@ -58,10 +54,6 @@ pub fn process_mcx_depth(packet: &mut Packet, work: &Work) {
             5 => overlay_depth(snapshot, &md_incr_grp),
             _ => panic!("Invalid MDUpdateAction: {}", md_incr_grp.MDUpdateAction),
         };
-
-        if md_incr_grp.MDUpdateAction == 0 {
-            println!("{:#?}\n\n{:#?}\n\n\n", snapshot, md_incr_grp);
-        }
 
         snapshot.MsgSeqNum = Some(work.seq_no as u32);
 
@@ -127,7 +119,6 @@ pub fn change_depth(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp) 
         .or(mdssh_grp.PotentialSecurityTradingEvent);
     mdssh_grp.QuoteCondition = md_incr_grp.QuoteCondition.or(mdssh_grp.QuoteCondition);
 
-    println!("Changed position: {:?}", pos);
 }
 
 pub fn del_depth(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp) {
@@ -177,7 +168,6 @@ pub fn del_thru_depth(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp
         }
     });
 
-    println!("delete till level: {:?}", level);
 }
 
 pub fn del_from_depth(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp) {
@@ -193,7 +183,6 @@ pub fn del_from_depth(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp
         (mdssh_grp.MDPriceLevel < Some(level))
     });
 
-    println!("delete from level: {:?}", level);
 }
 
 pub fn overlay_depth(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp) {
