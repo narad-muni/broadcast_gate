@@ -30,7 +30,7 @@ pub fn struct_to_bytes_heap<T>(src: T, dst: &mut [u8]) -> usize {
     mem::forget(src);
 
     let mut size = size_of::<T>();
-    
+
     size = size.min(dst.len());
 
     unsafe {
@@ -77,6 +77,6 @@ pub fn bytes_to_partial_struct<T: Copy>(s: &mut T, buffer: &[u8]) {
     };
 }
 
-pub fn bytes_to_struct_mut<T: Copy>(buf: &mut [u8]) -> &mut T {
+pub fn bytes_to_struct_mut<T>(buf: &mut [u8]) -> &mut T {
     unsafe { &mut *(buf.as_mut_ptr() as *mut T) }
 }

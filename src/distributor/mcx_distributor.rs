@@ -1,18 +1,21 @@
-use std::{
-    fs, ptr::drop_in_place, sync::atomic::Ordering
-};
+use std::{fs, ptr::drop_in_place, sync::atomic::Ordering};
 
 use bytes::Bytes;
 use fastlib::{Decoder, ModelFactory};
 use serde::Deserialize;
 
 use crate::{
-    constants::BUF_SIZE, global::{MCX_TOKEN_WISE_MAP, TPOOL_QUEUE}, settings, types::{
+    constants::BUF_SIZE,
+    global::{MCX_TOKEN_WISE_MAP, TPOOL_QUEUE},
+    settings,
+    types::{
         packet::Packet,
         packet_structures::mcx::{DepthIncremental, DepthSnapshot, Message},
         state::McxTokenState,
         work::{Work, WorkType},
-    }, utils::byte_utils::struct_to_bytes_heap, workers::get_mcx_processing_fn
+    },
+    utils::byte_utils::struct_to_bytes_heap,
+    workers::get_mcx_processing_fn,
 };
 
 use super::Distribute;
@@ -130,7 +133,8 @@ impl McxDistributor {
         if mcx_state.packet_queue.len() == 0 {
             // Create message packet
             let mut empty_packet = Packet([0; BUF_SIZE], BUF_SIZE);
-            empty_packet.1 = struct_to_bytes_heap(Message::DepthSnapshotEmpty(()), &mut empty_packet.0);
+            empty_packet.1 =
+                struct_to_bytes_heap(Message::DepthSnapshotEmpty(()), &mut empty_packet.0);
 
             mcx_state.packet_queue.push(empty_packet);
 

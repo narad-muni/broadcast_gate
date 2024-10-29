@@ -1,4 +1,7 @@
-use std::{mem::{self, MaybeUninit}, ptr};
+use std::{
+    mem::{self},
+    ptr,
+};
 
 #[derive(Debug)]
 struct St {
@@ -9,7 +12,7 @@ struct St {
 impl St {
     fn new() -> Self {
         Self {
-            vec: vec![1,4,6,2,7],
+            vec: vec![1, 4, 6, 2, 7],
             str: "Hello World".to_string(),
         }
     }
@@ -33,7 +36,7 @@ pub fn struct_to_bytes_bincode<T>(src: T, dst: &mut [u8]) -> usize {
     mem::forget(src);
 
     let mut size = size_of::<T>();
-    
+
     size = size.min(dst.len());
 
     unsafe {
@@ -44,17 +47,17 @@ pub fn struct_to_bytes_bincode<T>(src: T, dst: &mut [u8]) -> usize {
     size
 }
 fn main() {
-    let mut buf: [u8; 1024] = [0;1024];
+    let mut buf: [u8; 1024] = [0; 1024];
 
     {
         let st = St::new();
-        
+
         struct_to_bytes_bincode(st, &mut buf);
     }
 
     let st: St = bytes_to_struct_bincode(&buf);
 
-    buf = [0;1024];
+    buf = [0; 1024];
 
     println!("{:?}", st);
 }

@@ -1,9 +1,9 @@
 use std::ptr::drop_in_place;
-use std::thread::{self, JoinHandle};
 use std::sync::{
     atomic::{AtomicPtr, Ordering},
     Arc,
 };
+use std::thread::{self, JoinHandle};
 
 use crate::types::state::NseTokenState;
 use crate::{
