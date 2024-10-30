@@ -492,7 +492,7 @@ pub fn get_token(trans_code: i16, buf: &[u8], idx: usize) -> i32 {
 
     let mut token = 0;
 
-    if exchange == &Exchange::NEQ {
+    if exchange == Exchange::NEQ {
         if trans_code == BCAST_MBO_MBP {
             let token_start = SKIP_BYTES + NSE_HEADER_SIZE;
             let token_end = token_start + size_of::<i32>();
