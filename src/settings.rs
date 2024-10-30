@@ -22,7 +22,7 @@ pub fn init() {
 
     // Set global exchange
     unsafe {
-        EXCHANGE = &SETTINGS.get().unwrap().exchange;
+        EXCHANGE = SETTINGS.get().unwrap().exchange;
     }
 }
 

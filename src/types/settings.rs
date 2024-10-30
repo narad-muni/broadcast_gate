@@ -25,6 +25,8 @@ pub struct Settings {
 
     pub fast_template: Option<String>,
 
+    pub subscribed_tokens: Vec<u64>,
+
     pub steps: usize,
 
     pub thread_count: usize,
@@ -37,7 +39,7 @@ pub struct Settings {
     pub output_targets: OutputTargets,
 }
 
-#[derive(Deserialize, Clone, PartialEq)]
+#[derive(Deserialize, Clone, PartialEq, Copy)]
 pub enum Exchange {
     NEQ,
     NFO,
@@ -54,6 +56,7 @@ bitflags! {
         const KAFKA = 2;
         const STDOUT = 4;
         const COUNTER = 8;
+        const DISPLAY = 16;
     }
 }
 
