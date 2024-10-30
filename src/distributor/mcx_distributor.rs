@@ -105,9 +105,9 @@ impl McxDistributor {
 
         if new_seq_no <= current_seq_no {
             return;
-        } else {
-            mcx_state.seq_no.store(new_seq_no, Ordering::SeqCst);
         }
+
+        mcx_state.seq_no.store(new_seq_no, Ordering::SeqCst);
 
         // Create work
         let work = Work {
