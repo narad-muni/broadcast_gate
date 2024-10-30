@@ -91,7 +91,3 @@ pub const UNRECOVERABLE_ERROR_KINDS: [ErrorKind; 7] = [
     ErrorKind::Unsupported,
     ErrorKind::OutOfMemory,
 ];
-
-// For MCX
-pub const MCX_BID: u32 = 0;
-pub const MCX_ASK: u32 = 0;

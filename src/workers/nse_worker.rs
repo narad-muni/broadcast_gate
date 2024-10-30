@@ -12,15 +12,13 @@ use crate::{
     types::{
         packet::Packet,
         packet_structures::{
+            depth_output::{TagMarketDepthInfo, TagMarketPictureBroadcast, TagMessageHeader},
             ncd::{build_ncd_struct, NcdBroadcastTransactionMapping},
             neq::{
                 self, build_neq_struct, BcastHeaders, BcastInteractiveMBPDataCEDTC,
                 BcastOnlyMBPCEDTC, NeqBroadcastTransactionMapping,
             },
-            nfo::{
-                self, build_nfo_struct, NfoBroadcastTransactionMapping, TagMarketDepthInfo,
-                TagMarketPictureBroadcast, TagMessageHeader,
-            },
+            nfo::{self, build_nfo_struct, NfoBroadcastTransactionMapping},
         },
         settings::Exchange,
         work::Work,
@@ -28,7 +26,7 @@ use crate::{
     utils::byte_utils::{create_empty, struct_to_bytes},
 };
 
-pub fn cast_and_twiddle_nfo(packet: &mut Packet, _work: &Work) {
+pub fn cast_and_twiddle_nfo(packet: &mut Packet, _work: &Work) -> bool {
     let trans_code = BcastHeaders::get_trans_code(&packet.0);
 
     if let Some(mut nfo_struct) = build_nfo_struct(trans_code, &packet.0[SKIP_BYTES..]) {
@@ -45,9 +43,11 @@ pub fn cast_and_twiddle_nfo(packet: &mut Packet, _work: &Work) {
             nfo_struct.to_bytes(&mut packet.0);
         }
     };
+
+    true
 }
 
-pub fn cast_and_twiddle_neq(packet: &mut Packet, _work: &Work) {
+pub fn cast_and_twiddle_neq(packet: &mut Packet, _work: &Work) -> bool {
     let trans_code = BcastHeaders::get_trans_code(&packet.0);
 
     if let Some(mut neq_struct) = build_neq_struct(trans_code, &packet.0[SKIP_BYTES..]) {
@@ -67,9 +67,11 @@ pub fn cast_and_twiddle_neq(packet: &mut Packet, _work: &Work) {
             neq_struct.to_bytes(&mut packet.0);
         };
     }
+
+    true
 }
 
-pub fn cast_and_twiddle_ncd(packet: &mut Packet, _work: &Work) {
+pub fn cast_and_twiddle_ncd(packet: &mut Packet, _work: &Work) -> bool {
     let trans_code = BcastHeaders::get_trans_code(&packet.0);
 
     if let Some(mut ncd_struct) = build_ncd_struct(trans_code, &packet.0[SKIP_BYTES..]) {
@@ -88,6 +90,8 @@ pub fn cast_and_twiddle_ncd(packet: &mut Packet, _work: &Work) {
             ncd_struct.to_bytes(&mut packet.0);
         };
     }
+
+    true
 }
 
 // 7200 for fao, cd

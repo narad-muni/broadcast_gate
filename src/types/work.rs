@@ -2,7 +2,7 @@ use std::sync::{atomic::AtomicPtr, Arc};
 
 use super::{packet::Packet, state::McxTokenState};
 
-pub type ProcessingFn = fn(&mut Packet, &Work);
+pub type ProcessingFn = fn(&mut Packet, &Work) -> bool;
 
 #[derive(Debug)]
 pub struct Work {

@@ -7,6 +7,8 @@ pub mod mcx;
 pub mod ncd; // NSE Commodities
 pub mod neq; // NSE Equity
 pub mod nfo; // NSE FAO
+             // Custom structure for depth format
+pub mod depth_output;
 
 #[derive(Debug, Twiddle, Clone, Copy)]
 #[repr(C, packed(2))]

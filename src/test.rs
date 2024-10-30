@@ -23,15 +23,22 @@ fn main() {
             action: Action::Bid,
             level: 3,
         },
+        Depth {
+            action: Action::Bid,
+            level: 3,
+        },
     ];
 
-    println!("{:?}", get_new_depth_idx(
-        &depth,
-        Depth {
-            action: Action::Ask,
-            level: 1,
-        }
-    ));
+    println!(
+        "{:?}",
+        get_new_depth_idx(
+            &depth,
+            Depth {
+                action: Action::Ask,
+                level: 1,
+            }
+        )
+    );
 }
 
 fn get_new_depth_idx(depth: &Vec<Depth>, new_depth: Depth) -> u32 {
@@ -39,7 +46,6 @@ fn get_new_depth_idx(depth: &Vec<Depth>, new_depth: Depth) -> u32 {
     let mut started = false;
 
     for d in depth {
-
         if new_depth.action == d.action {
             started = true;
         }

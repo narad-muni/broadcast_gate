@@ -67,7 +67,12 @@ pub fn work_on_mcx(work: Work) {
     let work_lock = mcx_state.work_lock;
 
     while let Some(mut packet) = packet_queue.pop() {
-        (work.processing_fn)(&mut packet, &work);
+        let processed = (work.processing_fn)(&mut packet, &work);
+
+        // If packet was not processed, try processing another packet
+        if !processed {
+            continue;
+        }
 
         OUTPUT.write(&packet);
 

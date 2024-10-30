@@ -101,8 +101,12 @@ impl McxDistributor {
 
         // Do not process if packet's seq no is older than current
         let current_seq_no = mcx_state.seq_no.load(Ordering::SeqCst);
-        if depth_snapshot.MsgSeqNum.unwrap_or(0) <= current_seq_no {
+        let new_seq_no = depth_snapshot.MsgSeqNum.expect("MsgSeqNum must be present");
+
+        if new_seq_no <= current_seq_no {
             return;
+        } else {
+            mcx_state.seq_no.store(new_seq_no, Ordering::SeqCst);
         }
 
         // Create work
@@ -111,7 +115,7 @@ impl McxDistributor {
             processing_fn: get_mcx_processing_fn(&WorkType::McxDepth),
             atomic_ptr: None,
             mcx_state: Some(mcx_state.clone()),
-            seq_no: depth_snapshot.MsgSeqNum.unwrap_or(0) as usize,
+            seq_no: new_seq_no as usize,
         };
 
         // Create packet

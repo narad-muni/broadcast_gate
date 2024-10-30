@@ -1,7 +1,6 @@
 use std::{ptr, sync::atomic::Ordering, u32};
 
 use crate::{
-    constants::MCX_BID,
     types::{
         packet::Packet,
         packet_structures::mcx::{DepthSnapshot, MDIncGrp, MDSshGrp, Message},
@@ -13,7 +12,7 @@ use crate::{
     },
 };
 
-pub fn process_mcx_depth(packet: &mut Packet, work: &Work) {
+pub fn process_mcx_depth(packet: &mut Packet, work: &Work) -> bool {
     // Swap atomic ptr with null, and add atomic ptr to work
     let mcx_state = work.mcx_state.clone().unwrap();
 
@@ -41,7 +40,8 @@ pub fn process_mcx_depth(packet: &mut Packet, work: &Work) {
                 Ordering::SeqCst,
                 Ordering::SeqCst,
             );
-            return;
+
+            return false;
         }
 
         // Perform update based on MDUpdateAction
@@ -67,6 +67,8 @@ pub fn process_mcx_depth(packet: &mut Packet, work: &Work) {
     } else {
         todo!();
     }
+
+    true
 }
 
 pub fn add_depth(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp) {
@@ -108,7 +110,6 @@ pub fn change_depth(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp) 
         .PotentialSecurityTradingEvent
         .or(mdssh_grp.PotentialSecurityTradingEvent);
     mdssh_grp.QuoteCondition = md_incr_grp.QuoteCondition.or(mdssh_grp.QuoteCondition);
-
 }
 
 pub fn del_depth(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp) {
@@ -157,7 +158,6 @@ pub fn del_thru_depth(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp
             price_level += 1;
         }
     });
-
 }
 
 pub fn del_from_depth(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp) {
@@ -172,7 +172,6 @@ pub fn del_from_depth(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp
         // Or price level is lower than specified
         (mdssh_grp.MDPriceLevel < Some(level))
     });
-
 }
 
 pub fn overlay_depth(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp) {
@@ -206,7 +205,6 @@ fn get_new_depth_idx(depths: &Vec<MDSshGrp>, new_depth: &MDSshGrp) -> usize {
     let mut entry_started = false;
 
     for depth in depths {
-
         if new_depth.MDEntryType == depth.MDEntryType {
             entry_started = true;
         }
@@ -215,7 +213,7 @@ fn get_new_depth_idx(depths: &Vec<MDSshGrp>, new_depth: &MDSshGrp) -> usize {
             break;
         }
 
-        if depth.MDPriceLevel.unwrap_or(u32::MAX) >= new_depth.MDPriceLevel.unwrap() && entry_started {
+        if depth.MDPriceLevel >= new_depth.MDPriceLevel && entry_started {
             break;
         }
         pos += 1;
