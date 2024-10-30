@@ -1,7 +1,4 @@
-use std::{
-    mem::size_of,
-    time::{SystemTime, UNIX_EPOCH},
-};
+use std::mem::size_of;
 
 use crate::{
     constants::{
@@ -23,7 +20,10 @@ use crate::{
         settings::Exchange,
         work::Work,
     },
-    utils::byte_utils::{create_empty, struct_to_bytes},
+    utils::{
+        byte_utils::{create_empty, struct_to_bytes},
+        time_utils::get_epoch_us,
+    },
 };
 
 pub fn cast_and_twiddle_nfo(packet: &mut Packet, _work: &Work) -> bool {
@@ -106,16 +106,13 @@ pub fn convert_mbo_mbp(
         alpha_char: bcast_mbo_mbp.bcast_header.alpha_char,
         trader_id: bcast_mbo_mbp.bcast_header.bc_seq_no,
         error_code: bcast_mbo_mbp.bcast_header.error_code,
-        timestamp: SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_micros() as u64,
+        timestamp: get_epoch_us() as u64,
         timestamp1: bcast_mbo_mbp.bcast_header.time_stamp2,
         timestamp2: bcast_mbo_mbp.bcast_header.time_stamp2,
         message_length: bcast_mbo_mbp.bcast_header.message_length,
     };
 
-    let mut market_depth_info: [TagMarketDepthInfo; 200] = create_empty();
+    let mut market_depth_info: [TagMarketDepthInfo; MAX_MARKET_DEPTH_IDX] = create_empty();
 
     let mut buy_depth_count = 0;
     let mut sell_depth_count = 0;
@@ -185,16 +182,13 @@ pub fn convert_mbo_mbp_eq(
         alpha_char: bcast_mbo_mbp.bcast_header.alpha_char,
         trader_id: bcast_mbo_mbp.bcast_header.bc_seq_no,
         error_code: bcast_mbo_mbp.bcast_header.error_code,
-        timestamp: SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_micros() as u64,
+        timestamp: get_epoch_us() as u64,
         timestamp1: bcast_mbo_mbp.bcast_header.time_stamp2,
         timestamp2: bcast_mbo_mbp.bcast_header.time_stamp2,
         message_length: bcast_mbo_mbp.bcast_header.message_length,
     };
 
-    let mut market_depth_info: [TagMarketDepthInfo; 200] = create_empty();
+    let mut market_depth_info: [TagMarketDepthInfo; MAX_MARKET_DEPTH_IDX] = create_empty();
 
     let mut buy_depth_count = 0;
     let mut sell_depth_count = 0;
@@ -264,16 +258,13 @@ pub fn convert_only_mbp(
         alpha_char: bcast_only_mbp.bcast_header.alpha_char,
         trader_id: bcast_only_mbp.bcast_header.bc_seq_no,
         error_code: bcast_only_mbp.bcast_header.error_code,
-        timestamp: SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_micros() as u64,
+        timestamp: get_epoch_us() as u64,
         timestamp1: bcast_only_mbp.bcast_header.time_stamp2,
         timestamp2: bcast_only_mbp.bcast_header.time_stamp2,
         message_length: bcast_only_mbp.bcast_header.message_length,
     };
 
-    let mut market_depth_info: [TagMarketDepthInfo; 200] = create_empty();
+    let mut market_depth_info: [TagMarketDepthInfo; MAX_MARKET_DEPTH_IDX] = create_empty();
 
     let mut buy_depth_count = 0;
     let mut sell_depth_count = 0;
@@ -347,16 +338,13 @@ pub fn convert_only_mbp_eq(
         alpha_char: bcast_only_mbp.bcast_header.alpha_char,
         trader_id: bcast_only_mbp.bcast_header.bc_seq_no,
         error_code: bcast_only_mbp.bcast_header.error_code,
-        timestamp: SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_micros() as u64,
+        timestamp: get_epoch_us() as u64,
         timestamp1: bcast_only_mbp.bcast_header.time_stamp2,
         timestamp2: bcast_only_mbp.bcast_header.time_stamp2,
         message_length: bcast_only_mbp.bcast_header.message_length,
     };
 
-    let mut market_depth_info: [TagMarketDepthInfo; 200] = create_empty();
+    let mut market_depth_info: [TagMarketDepthInfo; MAX_MARKET_DEPTH_IDX] = create_empty();
 
     let mut buy_depth_count = 0;
     let mut sell_depth_count = 0;
@@ -430,16 +418,13 @@ pub fn convert_only_mbp_cedtc(
         alpha_char: bcast_only_mbp_cedtc.bcast_header.alpha_char,
         trader_id: bcast_only_mbp_cedtc.bcast_header.bc_seq_no,
         error_code: bcast_only_mbp_cedtc.bcast_header.error_code,
-        timestamp: SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_micros() as u64,
+        timestamp: get_epoch_us() as u64,
         timestamp1: bcast_only_mbp_cedtc.bcast_header.time_stamp2,
         timestamp2: bcast_only_mbp_cedtc.bcast_header.time_stamp2,
         message_length: bcast_only_mbp_cedtc.bcast_header.message_length,
     };
 
-    let mut market_depth_info: [TagMarketDepthInfo; 200] = create_empty();
+    let mut market_depth_info: [TagMarketDepthInfo; MAX_MARKET_DEPTH_IDX] = create_empty();
 
     let mut buy_depth_count = 0;
     let mut sell_depth_count = 0;
