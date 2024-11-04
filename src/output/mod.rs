@@ -21,11 +21,11 @@ pub mod std_out;
 pub mod udp_output;
 
 pub struct Output {
-    kafka: UnsafeCell<KafkaOutput>,
+    kafka: Option<UnsafeCell<KafkaOutput>>,
     udp: UnsafeCell<UdpOutput>,
     stdout: UnsafeCell<StdOut>,
     counter: UnsafeCell<Counter>,
-    depth_view: UnsafeCell<DepthView>,
+    depth_view: Option<UnsafeCell<DepthView>>,
     lock: AtomicBool,
     output_targets: OutputTargets,
 }
@@ -41,15 +41,20 @@ impl Output {
     pub fn new() -> Self {
         let settings = settings::get();
 
-        let kafka = UnsafeCell::new(KafkaOutput::new());
+        let kafka = if settings.output_targets.contains(OutputTargets::KAFKA) {
+            Some(UnsafeCell::new(KafkaOutput::new()))
+        } else {
+            None
+        };
         let udp = UnsafeCell::new(UdpOutput::new());
         let stdout = UnsafeCell::new(StdOut::new());
         let counter = UnsafeCell::new(Counter::new(settings.steps));
-        let depth_view = UnsafeCell::new(DepthView::new());
+        let depth_view = if settings.output_targets.contains(OutputTargets::DEPTH_VIEW) {
+            Some(UnsafeCell::new(DepthView::new()))
+        } else {
+            None
+        };
         let output_targets = settings::get().output_targets.clone();
-
-        // Create window at start
-        depth_view.get();
 
         Self {
             kafka,
@@ -72,7 +77,7 @@ impl Output {
             }
 
             if self.output_targets.contains(OutputTargets::KAFKA) {
-                (*self.kafka.get()).write(packet);
+                (*self.kafka.as_ref().unwrap().get()).write(packet);
             }
 
             if self.output_targets.contains(OutputTargets::STDOUT) {
@@ -84,7 +89,7 @@ impl Output {
             }
 
             if self.output_targets.contains(OutputTargets::DEPTH_VIEW) {
-                (*self.depth_view.get()).write(packet);
+                (*self.depth_view.as_ref().unwrap().get()).write(packet);
             }
 
             // release lock
