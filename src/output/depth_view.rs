@@ -102,7 +102,7 @@ impl OutputTrait for DepthView {
         let message_code = i32::from_le_bytes(data.0[0..4].try_into().unwrap());
 
         if !self.message_code.contains(&message_code) {
-            println!("Invalid message code: {}", message_code);
+            // println!("Invalid message code: {}", message_code);
             return;
         }
 
@@ -117,7 +117,7 @@ impl OutputTrait for DepthView {
         );
 
         if !self.subscribed_tokens.is_empty() && !self.subscribed_tokens.contains(&(token as u64)) {
-            println!("Invalid token: {}", token);
+            // println!("Invalid token: {}", token);
             return;
         }
 
