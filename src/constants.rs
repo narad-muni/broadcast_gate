@@ -70,6 +70,7 @@ pub const MAX_SUB_PACKETS: usize = 12;
 pub const U16_MAX: i16 = 32767;
 pub const BEST_BID_VALUE: i16 = 32766;
 pub const BEST_OFFER_VALUE: i16 = -32766;
+pub const BSE_BCAST_MBP: i16 = 2020;
 
 pub const MBP_UNCOMPRESSED_HEADER_LEN: usize = 28;
 pub const MBP_UNCOMPRESSED_DATA_LEN: usize = 56;

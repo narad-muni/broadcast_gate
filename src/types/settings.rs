@@ -56,7 +56,7 @@ bitflags! {
         const KAFKA = 2;
         const STDOUT = 4;
         const COUNTER = 8;
-        const DISPLAY = 16;
+        const DEPTH_VIEW = 16;
     }
 }
 
@@ -108,6 +108,7 @@ impl FromStr for OutputTargets {
             "kafka" => Ok(OutputTargets::KAFKA),
             "stdout" => Ok(OutputTargets::STDOUT),
             "counter" => Ok(OutputTargets::COUNTER),
+            "depth_view" => Ok(OutputTargets::DEPTH_VIEW),
             _ => Err("Invalid target"),
         }
     }

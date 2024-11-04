@@ -1,8 +1,11 @@
+use serde::Serialize;
+use serde_big_array::BigArray;
+use std::fmt::Display;
 use twiddler::Twiddle;
 
 use crate::constants::{ALPHA_CHAR_LEN, MAX_MARKET_DEPTH_IDX, TIMESTAMP_LEN};
 
-#[derive(Debug, Twiddle, Clone, Copy)]
+#[derive(Debug, Twiddle, Clone, Copy, Serialize)]
 #[repr(C, packed(2))]
 pub struct TagMarketDepthInfo {
     pub qty: i64,
@@ -10,7 +13,7 @@ pub struct TagMarketDepthInfo {
     pub number_of_orders: i16,
 }
 
-#[derive(Debug, Twiddle, Clone, Copy)]
+#[derive(Debug, Twiddle, Clone, Copy, Serialize)]
 #[repr(C, packed(2))]
 pub struct TagMessageHeader {
     pub message_code: i32,
@@ -25,7 +28,7 @@ pub struct TagMessageHeader {
     pub message_length: i16,
 }
 
-#[derive(Debug, Twiddle, Clone, Copy)]
+#[derive(Debug, Twiddle, Clone, Copy, Serialize)]
 #[repr(C, packed(2))]
 pub struct TagMarketPictureBroadcast {
     pub msg_header: TagMessageHeader,
@@ -39,12 +42,13 @@ pub struct TagMarketPictureBroadcast {
     pub low_price: i32,
     pub ltp: i32,
     pub ltq: i32,
-    pub ltt: i32,
+    pub ltt: i64,
     pub atp: i32,
     pub indicative_close_price: i32,
-    pub lut: i32,
+    pub lut: i64,
     pub buy_depth_count: i32,
     pub sell_depth_count: i32,
     pub trading_status: i16,
+    #[serde(with = "BigArray")]
     pub market_depth_info: [TagMarketDepthInfo; MAX_MARKET_DEPTH_IDX],
 }

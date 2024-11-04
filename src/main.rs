@@ -1,7 +1,9 @@
 use std::thread;
 
 use distributor::Distributor;
+use global::OUTPUT;
 use input::UdpInput;
+use output::Output;
 use statistics::Statistics;
 use threadpool::ThreadPoolMaster;
 
@@ -20,6 +22,8 @@ mod workers;
 
 fn main() {
     settings::init();
+    // Because behind lazy static, we need to init it at start
+    OUTPUT.touch();
 
     let distributor = Distributor::new();
     let tpool_master = ThreadPoolMaster::new(settings::get().thread_count);

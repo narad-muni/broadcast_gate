@@ -1,64 +1,34 @@
-struct Depth {
-    action: Action,
-    level: u32,
+use web_view::*;
+
+fn main() -> WVResult {
+    let webview = web_view::builder()
+        .title("Dialog example")
+        .content(Content::Html(HTML))
+        .size(800, 600)
+        .resizable(true)
+        .debug(true)
+        .user_data(())
+        .invoke_handler(|webview, arg| {
+            match arg {
+                _ => println!("Callback {}", arg),
+            };
+            Ok(())
+        })
+        .build()?;
+
+    webview.run()
 }
 
-#[derive(Debug, PartialEq)]
-enum Action {
-    Bid,
-    Ask,
-}
-
-fn main() {
-    let depth = vec![
-        Depth {
-            action: Action::Bid,
-            level: 1,
-        },
-        Depth {
-            action: Action::Bid,
-            level: 2,
-        },
-        Depth {
-            action: Action::Bid,
-            level: 3,
-        },
-        Depth {
-            action: Action::Bid,
-            level: 3,
-        },
-    ];
-
-    println!(
-        "{:?}",
-        get_new_depth_idx(
-            &depth,
-            Depth {
-                action: Action::Ask,
-                level: 1,
-            }
-        )
-    );
-}
-
-fn get_new_depth_idx(depth: &Vec<Depth>, new_depth: Depth) -> u32 {
-    let mut pos = 0;
-    let mut started = false;
-
-    for d in depth {
-        if new_depth.action == d.action {
-            started = true;
-        }
-
-        if started && d.action != new_depth.action {
-            break;
-        }
-
-        if d.level >= new_depth.level && started {
-            break;
-        }
-        pos += 1;
-    }
-
-    pos
-}
+const HTML: &str = r#"
+<!doctype html>
+<html>
+    <body>
+        <button onclick="external.invoke('open')">Open</button>
+        <button onclick="external.invoke('save')">Save</button>
+        <button onclick="external.invoke('info')">Info</button>
+        <button onclick="external.invoke('warning')">Warning</button>
+        <button onclick="external.invoke('error')">Error</button>
+        <button onclick="external.invoke('exit')">Exit</button>
+    </body>
+</html>
+"#;
