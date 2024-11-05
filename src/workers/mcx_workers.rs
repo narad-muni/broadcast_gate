@@ -118,7 +118,7 @@ pub fn process_mcx_depth(packet: &mut Packet, work: &Work) -> bool {
             }
         }
     } else {
-        todo!();
+        // todo!();
     }
 
     true
@@ -169,7 +169,7 @@ fn snapshot_to_market_picture(depth_snapshot: &DepthSnapshot) -> TagMarketPictur
             if trade_condition & 1 == 1 {
                 ltp = md_ssh_grp.MDEntryPx.unwrap() as i32;
                 ltq = md_ssh_grp.MDEntrySize.unwrap() as i32;
-                ltt = md_ssh_grp.MDEntryTime.unwrap() / 1000000;
+                ltt = (md_ssh_grp.MDEntryTime.unwrap() / 1000000000) as i32;
             }
             // Set open, high, low, close
             if trade_condition & 2 == 2 {
@@ -202,7 +202,7 @@ fn snapshot_to_market_picture(depth_snapshot: &DepthSnapshot) -> TagMarketPictur
         ltt,
         atp,
         indicative_close_price: 0,
-        lut: depth_snapshot.LastUpdateTime / 1000000,
+        lut: depth_snapshot.LastUpdateTime,
         buy_depth_count: 0,
         sell_depth_count: 0,
         trading_status: 1,

@@ -1,10 +1,10 @@
 <script>
     export let data;
 
-    let ltt = new Date(data.ltt);
+    let ltt = new Date(data.ltt * 1000);
     ltt = ltt.toLocaleString();
 
-    let lut = new Date(data.lut);
+    let lut = new Date(data.lut / 1000000);
     lut = lut.toLocaleString();
 </script>
 

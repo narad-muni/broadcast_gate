@@ -1,6 +1,5 @@
 use serde::Serialize;
 use serde_big_array::BigArray;
-use std::fmt::Display;
 use twiddler::Twiddle;
 
 use crate::constants::{ALPHA_CHAR_LEN, MAX_MARKET_DEPTH_IDX, TIMESTAMP_LEN};
@@ -42,7 +41,7 @@ pub struct TagMarketPictureBroadcast {
     pub low_price: i32,
     pub ltp: i32,
     pub ltq: i32,
-    pub ltt: i64,
+    pub ltt: i32,
     pub atp: i32,
     pub indicative_close_price: i32,
     pub lut: i64,

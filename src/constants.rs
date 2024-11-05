@@ -65,6 +65,7 @@ pub const BCAST_ONLY_MBP: i16 = 7208;
 pub const BCAST_ONLY_MBP_EQ: i16 = 18705;
 pub const BCAST_MBO_MBP: i16 = 7200;
 pub const MAX_SUB_PACKETS: usize = 12;
+pub const NSE_EPOCH_START: i32 = 315532800;
 
 // For BSE
 pub const U16_MAX: i16 = 32767;
