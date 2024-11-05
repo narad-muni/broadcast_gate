@@ -21,9 +21,39 @@
 
   document.addEventListener("depth_data_event", (event) => {
     add_data(event.detail.token, event.detail);
-  })
+  });
 
-  // window.webkit.messageHandlers.external.postMessage("Hello")
+  const url = new URL(window.location.href);
+
+  // Get the value of a specific query parameter
+  const ws = url.searchParams.get("ws");
+
+  if (ws == null) {
+    // Reload with ws param
+    window.location.href = window.location.href + "?ws=ws://localhost:8080";
+  }
+
+  const socket = new WebSocket(ws);
+
+  // Event listener for when a message is received from the server
+  socket.addEventListener("message", (event) => {
+    let data = JSON.parse(event.data);
+    data.market_depth_info = data.market_depth_info.slice(0, data.buy_depth_count + data.sell_depth_count);
+
+    add_data(data.token, data);
+
+    // console.log(data);
+  });
+
+  // Event listener for when the connection is closed
+  socket.addEventListener("close", (event) => {
+      alert("Disconnected from WebSocket server.");
+  });
+
+  // Event listener for when there is an error with the connection
+  socket.addEventListener("error", (error) => {
+      alert("WebSocket error:", error);
+  });
 </script>
 
 <form class="max-w-md mx-auto">   

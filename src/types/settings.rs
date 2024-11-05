@@ -25,7 +25,7 @@ pub struct Settings {
 
     pub fast_template: Option<String>,
 
-    pub subscribed_tokens: Vec<u64>,
+    pub ws: Option<String>,
 
     pub steps: usize,
 
@@ -57,6 +57,7 @@ bitflags! {
         const STDOUT = 4;
         const COUNTER = 8;
         const DEPTH_VIEW = 16;
+        const WS = 32;
     }
 }
 
@@ -109,6 +110,7 @@ impl FromStr for OutputTargets {
             "stdout" => Ok(OutputTargets::STDOUT),
             "counter" => Ok(OutputTargets::COUNTER),
             "depth_view" => Ok(OutputTargets::DEPTH_VIEW),
+            "ws" => Ok(OutputTargets::WS),
             _ => Err("Invalid target"),
         }
     }

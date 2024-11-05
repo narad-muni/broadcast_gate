@@ -24,6 +24,7 @@ fastlib = {git="https://github.com/narad-muni/rs-fastlib"}
 bytes = "1.8.0"
 web-view = "0.7.3"
 serde-big-array = "0.5.1"
+tungstenite = "0.24.0"
 
 [profile.release]
 strip = true

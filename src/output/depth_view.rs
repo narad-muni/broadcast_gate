@@ -1,4 +1,4 @@
-use std::{mem::offset_of, sync::Arc, thread};
+use std::{sync::Arc, thread};
 
 use crossbeam::queue::SegQueue;
 use web_view::Content;
@@ -19,7 +19,6 @@ use super::OutputTrait;
 
 pub struct DepthView {
     message_code: Vec<i32>,
-    subscribed_tokens: Vec<u64>,
     mq: Arc<SegQueue<Packet>>,
 }
 
@@ -88,11 +87,7 @@ impl DepthView {
             webview.run().unwrap();
         });
 
-        DepthView {
-            message_code,
-            subscribed_tokens: settings.subscribed_tokens.clone(),
-            mq,
-        }
+        DepthView { message_code, mq }
     }
 }
 
@@ -103,21 +98,6 @@ impl OutputTrait for DepthView {
 
         if !self.message_code.contains(&message_code) {
             // println!("Invalid message code: {}", message_code);
-            return;
-        }
-
-        // Get token
-        let token_offset = offset_of!(TagMarketPictureBroadcast, token);
-        let token_sz = size_of::<i64>();
-
-        let token = i64::from_le_bytes(
-            data.0[token_offset..token_offset + token_sz]
-                .try_into()
-                .unwrap(),
-        );
-
-        if !self.subscribed_tokens.is_empty() && !self.subscribed_tokens.contains(&(token as u64)) {
-            // println!("Invalid token: {}", token);
             return;
         }
 

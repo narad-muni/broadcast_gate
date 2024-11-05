@@ -15,8 +15,9 @@
   "kafka_partition_no": 0,
   "kafka_brokers": "localhost:9092",
   "kafka_topic_name": "rust",
+  "ws": "localhost:9903",
   "kafka_config_path": "kafka_config.json",
-  "output_targets": ["depth_view"],
+  "output_targets": ["ws"],
   "source_ip": "172.18.2.223",
   "fast_template": "template.xml"
 }

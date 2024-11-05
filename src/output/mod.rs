@@ -1,3 +1,10 @@
+pub mod counter;
+pub mod depth_view;
+pub mod kafka_output;
+pub mod std_out;
+pub mod udp_output;
+pub mod ws;
+
 use std::{
     cell::UnsafeCell,
     sync::atomic::{AtomicBool, Ordering},
@@ -8,20 +15,16 @@ use depth_view::DepthView;
 use kafka_output::KafkaOutput;
 use std_out::StdOut;
 use udp_output::UdpOutput;
+use ws::Ws;
 
 use crate::{
     settings,
     types::{packet::Packet, settings::OutputTargets},
 };
 
-pub mod counter;
-pub mod depth_view;
-pub mod kafka_output;
-pub mod std_out;
-pub mod udp_output;
-
 pub struct Output {
     kafka: Option<UnsafeCell<KafkaOutput>>,
+    ws: Option<UnsafeCell<Ws>>,
     udp: UnsafeCell<UdpOutput>,
     stdout: UnsafeCell<StdOut>,
     counter: UnsafeCell<Counter>,
@@ -54,6 +57,11 @@ impl Output {
         } else {
             None
         };
+        let ws = if settings.output_targets.contains(OutputTargets::WS) {
+            Some(UnsafeCell::new(Ws::new()))
+        } else {
+            None
+        };
         let output_targets = settings::get().output_targets.clone();
 
         Self {
@@ -62,6 +70,7 @@ impl Output {
             stdout,
             counter,
             depth_view,
+            ws,
             output_targets,
             lock: AtomicBool::new(false),
         }
@@ -90,6 +99,10 @@ impl Output {
 
             if self.output_targets.contains(OutputTargets::DEPTH_VIEW) {
                 (*self.depth_view.as_ref().unwrap().get()).write(packet);
+            }
+
+            if self.output_targets.contains(OutputTargets::WS) {
+                (*self.ws.as_ref().unwrap().get()).write(packet);
             }
 
             // release lock
