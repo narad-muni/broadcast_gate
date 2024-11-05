@@ -1,4 +1,5 @@
 use crate::{
+    constants::{BSE_BCAST_COMPLEX, BSE_BCAST_DEBT, BSE_BCAST_MBP},
     global::STATISTICS,
     types::{
         packet::Packet,
@@ -29,7 +30,7 @@ impl Distribute for BseDistributor {
         // Create work
         let work_type = match message_code {
             // BcastMbp, BcastMbpComplexInst, BcastDebtMbp are of type compressed
-            2020 | 2021 | 2033 => WorkType::BseCompressed,
+            BSE_BCAST_MBP | BSE_BCAST_COMPLEX | BSE_BCAST_DEBT => WorkType::BseCompressed,
             _ => WorkType::BseUncompressed,
         };
 

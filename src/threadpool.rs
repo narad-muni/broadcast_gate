@@ -7,7 +7,7 @@ use std::{
 use threadpool::ThreadPool;
 
 use crate::{
-    global::{OUTPUT, PACKET_QUEUES, TPOOL_QUEUE, WORK_LOCKS},
+    global::{PACKET_QUEUES, TPOOL_QUEUE, WORK_LOCKS},
     types::work::{Work, WorkType},
 };
 
@@ -54,8 +54,6 @@ pub fn work_on_map(work: Work) {
 
     // Call associated function
     (work.processing_fn)(&mut *old_packet, &work);
-
-    OUTPUT.write(&old_packet);
 }
 
 pub fn work_on_mcx(work: Work) {
@@ -73,8 +71,6 @@ pub fn work_on_mcx(work: Work) {
         if !processed {
             continue;
         }
-
-        OUTPUT.write(&packet);
 
         if !packet_queue.is_empty() {
             if TPOOL_QUEUE.is_empty() {
@@ -108,8 +104,6 @@ pub fn work_on_queue(work: Work) {
 
     while let Some(mut packet) = packet_queue.pop() {
         (work.processing_fn)(&mut packet, &work);
-
-        OUTPUT.write(&packet);
 
         if !packet_queue.is_empty() {
             if TPOOL_QUEUE.is_empty() {

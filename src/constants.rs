@@ -71,7 +71,9 @@ pub const NSE_EPOCH_START: i32 = 315532800;
 pub const U16_MAX: i16 = 32767;
 pub const BEST_BID_VALUE: i16 = 32766;
 pub const BEST_OFFER_VALUE: i16 = -32766;
-pub const BSE_BCAST_MBP: i16 = 2020;
+pub const BSE_BCAST_MBP: i32 = 2020;
+pub const BSE_BCAST_COMPLEX: i32 = 2021;
+pub const BSE_BCAST_DEBT: i32 = 2033;
 
 pub const MBP_UNCOMPRESSED_HEADER_LEN: usize = 28;
 pub const MBP_UNCOMPRESSED_DATA_LEN: usize = 56;

@@ -5,7 +5,7 @@ use crate::{
         BCAST_MBO_MBP, BCAST_ONLY_MBP, BCAST_ONLY_MBP_EQ, MAX_BUY_SELL_DEPTH_IDX,
         MAX_MARKET_DEPTH_IDX, MAX_MBPINFO_IDX, NSE_EPOCH_START, SKIP_BYTES,
     },
-    global::{EXCHANGE, NSE_HEADER_SIZE},
+    global::{EXCHANGE, NSE_HEADER_SIZE, OUTPUT},
     types::{
         packet::Packet,
         packet_structures::{
@@ -44,6 +44,8 @@ pub fn cast_and_twiddle_nfo(packet: &mut Packet, _work: &Work) -> bool {
         }
     };
 
+    OUTPUT.write(&packet);
+
     true
 }
 
@@ -68,6 +70,8 @@ pub fn cast_and_twiddle_neq(packet: &mut Packet, _work: &Work) -> bool {
         };
     }
 
+    OUTPUT.write(&packet);
+
     true
 }
 
@@ -90,6 +94,8 @@ pub fn cast_and_twiddle_ncd(packet: &mut Packet, _work: &Work) -> bool {
             ncd_struct.to_bytes(&mut packet.0);
         };
     }
+
+    OUTPUT.write(&packet);
 
     true
 }

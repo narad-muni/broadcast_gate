@@ -2,18 +2,26 @@ use std::mem::size_of;
 
 use crate::{
     constants::{
-        BEST_BID_VALUE, BEST_OFFER_VALUE, COMPLEX_MBP_UNCOMPRESSED_DATA_LEN,
-        DEBT_MBP_UNCOMPRESSED_DATA_LEN, MBP_UNCOMPRESSED_DATA_LEN, MBP_UNCOMPRESSED_HEADER_LEN,
-        U16_MAX,
+        ALPHA_CHAR_LEN, BEST_BID_VALUE, BEST_OFFER_VALUE, BSE_BCAST_MBP,
+        COMPLEX_MBP_UNCOMPRESSED_DATA_LEN, DEBT_MBP_UNCOMPRESSED_DATA_LEN, MAX_MARKET_DEPTH_IDX,
+        MBP_UNCOMPRESSED_DATA_LEN, MBP_UNCOMPRESSED_HEADER_LEN, TIMESTAMP_LEN, U16_MAX,
     },
+    global::OUTPUT,
     types::{
         packet::Packet,
-        packet_structures::bse::{
-            build_bse_struct, BcastComplexMarketPicture, BcastDebtMarketPicture, BcastMarketPicture,
+        packet_structures::{
+            bse::{
+                build_bse_struct, BcastComplexMarketPicture, BcastDebtMarketPicture,
+                BcastMarketPicture,
+            },
+            depth_output::{TagMarketDepthInfo, TagMarketPictureBroadcast, TagMessageHeader},
         },
         work::Work,
     },
-    utils::byte_utils::{bytes_to_partial_struct, bytes_to_struct, create_empty, struct_to_bytes},
+    utils::{
+        byte_utils::{bytes_to_partial_struct, bytes_to_struct, create_empty, struct_to_bytes},
+        time_utils::get_epoch_us,
+    },
 };
 
 pub fn process_bse_compressed(packet: &mut Packet, _work: &Work) -> bool {
@@ -32,10 +40,27 @@ pub fn process_bse_compressed(packet: &mut Packet, _work: &Work) -> bool {
     true
 }
 
+pub fn process_bse_uncompressed(packet: &mut Packet, _work: &Work) -> bool {
+    let mut trans_code: i32 = bytes_to_struct(&packet.0);
+    // Twiddle
+    trans_code = trans_code.to_be();
+
+    let mut bse_struct = build_bse_struct(trans_code as i16, &packet.0);
+    bse_struct.twiddle();
+
+    bse_struct.to_bytes(&mut packet.0);
+
+    OUTPUT.write(&packet);
+
+    true
+}
+
 pub fn decompress_bcast_mbp(packet: &mut Packet) {
     // Load uncompressed header
     let mut bcast_market_picture: BcastMarketPicture = create_empty();
     let mut offset = MBP_UNCOMPRESSED_HEADER_LEN;
+    let mut buy_count = 0;
+    let mut sell_count = 0;
 
     // Only cast header
     bytes_to_partial_struct(&mut bcast_market_picture, &packet.0[..offset]);
@@ -115,6 +140,8 @@ pub fn decompress_bcast_mbp(packet: &mut Packet) {
 
         // For buy
         for count in 0..bcast_market_picture.mbp_details[i].no_of_price_points as usize {
+            buy_count = count + 1;
+
             if count == 0 {
                 bcast_market_picture.mbp_details[i].mbp_data[count].best_bid_rate =
                     decompress_field(
@@ -187,6 +214,8 @@ pub fn decompress_bcast_mbp(packet: &mut Packet) {
 
         // For sell
         for count in 0..bcast_market_picture.mbp_details[i].no_of_price_points as usize {
+            sell_count = count + 1;
+
             if count == 0 {
                 bcast_market_picture.mbp_details[i].mbp_data[count].best_offer_rate =
                     decompress_field(
@@ -258,7 +287,17 @@ pub fn decompress_bcast_mbp(packet: &mut Packet) {
         } // sell loop end
     }
 
-    struct_to_bytes(&bcast_market_picture, &mut packet.0);
+    for i in 0..bcast_market_picture.no_of_records {
+        let mut bcast_market_picture = bcast_market_picture.clone();
+        bcast_market_picture.no_of_records = i;
+
+        let market_picture =
+            bcast_mbp_to_market_picture(&bcast_market_picture, buy_count, sell_count);
+
+        struct_to_bytes(&market_picture, &mut packet.0);
+
+        OUTPUT.write(&packet);
+    }
 }
 
 pub fn decompress_bcast_mbp_complex_list(packet: &mut Packet) {
@@ -487,7 +526,14 @@ pub fn decompress_bcast_mbp_complex_list(packet: &mut Packet) {
         } // sell loop end
     }
 
-    struct_to_bytes(&complex_market_picture, &mut packet.0);
+    for i in 0..complex_market_picture.no_of_records {
+        let mut complex_market_picture = complex_market_picture.clone();
+        complex_market_picture.no_of_records = i;
+
+        struct_to_bytes(&complex_market_picture, &mut packet.0);
+
+        OUTPUT.write(&packet);
+    }
 }
 
 pub fn decompress_bcast_debt_mbp(packet: &mut Packet) {
@@ -768,20 +814,14 @@ pub fn decompress_bcast_debt_mbp(packet: &mut Packet) {
         } // sell loop end
     }
 
-    struct_to_bytes(&debt_market_picture, &mut packet.0);
-}
+    for i in 0..debt_market_picture.no_of_records {
+        let mut debt_market_picture = debt_market_picture.clone();
+        debt_market_picture.no_of_records = i;
 
-pub fn process_bse_uncompressed(packet: &mut Packet, _work: &Work) -> bool {
-    let mut trans_code: i32 = bytes_to_struct(&packet.0);
-    // Twiddle
-    trans_code = trans_code.to_be();
+        struct_to_bytes(&debt_market_picture, &mut packet.0);
 
-    let mut bse_struct = build_bse_struct(trans_code as i16, &packet.0);
-    bse_struct.twiddle();
-
-    bse_struct.to_bytes(&mut packet.0);
-
-    true
+        OUTPUT.write(&packet);
+    }
 }
 
 pub fn decompress_field(base_value: i32, buf: &[u8], offset: &mut usize) -> i32 {
@@ -807,4 +847,80 @@ pub fn decompress_field(base_value: i32, buf: &[u8], offset: &mut usize) -> i32 
         // Add stop bit value to base value
         _ => stop_bit_value as i32 + base_value,
     }
+}
+
+fn bcast_mbp_to_market_picture(
+    bcast_mbp: &BcastMarketPicture,
+    buy_count: usize,
+    sell_count: usize,
+) -> TagMarketPictureBroadcast {
+    // No of records is used as index
+    let bcast_detail = bcast_mbp.mbp_details[bcast_mbp.no_of_records as usize];
+
+    let msg_header = TagMessageHeader {
+        message_code: BSE_BCAST_MBP as i32,
+        transaction_type: 0,
+        log_time: 0,
+        alpha_char: [0; ALPHA_CHAR_LEN],
+        trader_id: 0,
+        error_code: 0,
+        timestamp: get_epoch_us() as u64,
+        timestamp1: [0; TIMESTAMP_LEN],
+        timestamp2: [0; TIMESTAMP_LEN],
+        message_length: 0,
+    };
+
+    let mut market_depth_info: [TagMarketDepthInfo; MAX_MARKET_DEPTH_IDX] = create_empty();
+
+    // Buy
+    for i in 0..buy_count {
+        let market_depth = TagMarketDepthInfo {
+            qty: bcast_mbp.mbp_details[bcast_mbp.no_of_records as usize].mbp_data[i]
+                .no_of_bid_at_price_point as i64,
+            price: bcast_mbp.mbp_details[bcast_mbp.no_of_records as usize].mbp_data[i].best_bid_rate
+                as i32,
+            number_of_orders: bcast_mbp.mbp_details[bcast_mbp.no_of_records as usize].mbp_data[i]
+                .no_of_bid_at_price_point as i16,
+        };
+
+        market_depth_info[i] = market_depth;
+    }
+
+    // Sell
+    for i in 0..sell_count {
+        let market_depth = TagMarketDepthInfo {
+            qty: bcast_mbp.mbp_details[bcast_mbp.no_of_records as usize].mbp_data[i]
+                .no_of_offer_at_price_point as i64,
+            price: bcast_mbp.mbp_details[bcast_mbp.no_of_records as usize].mbp_data[i]
+                .best_offer_rate as i32,
+            number_of_orders: bcast_mbp.mbp_details[bcast_mbp.no_of_records as usize].mbp_data[i]
+                .no_of_offer_at_price_point as i16,
+        };
+
+        market_depth_info[i + buy_count] = market_depth;
+    }
+
+    let market_picture = TagMarketPictureBroadcast {
+        msg_header,
+        token: bcast_detail.instrument as i64,
+        total_buy_qty: bcast_detail.total_bid_qty as i64,
+        total_sell_qty: bcast_detail.total_offer_qty as i64,
+        volume_traded_today: bcast_detail.traded_volume as i64,
+        open_price: bcast_detail.open_rate,
+        close_price: bcast_detail.close_rate,
+        high_price: bcast_detail.high_rate,
+        low_price: bcast_detail.low_rate,
+        ltp: bcast_detail.ltp,
+        ltq: bcast_detail.ltq,
+        ltt: 0,
+        atp: bcast_detail.weighted_avg_price,
+        indicative_close_price: 0,
+        lut: bcast_detail.timestamp,
+        buy_depth_count: buy_count as i32,
+        sell_depth_count: sell_count as i32,
+        trading_status: bcast_detail.session_number,
+        market_depth_info,
+    };
+
+    market_picture
 }

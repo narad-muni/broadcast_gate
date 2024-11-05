@@ -4,7 +4,7 @@ use super::{packet::Packet, state::McxTokenState};
 
 pub type ProcessingFn = fn(&mut Packet, &Work) -> bool;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Work {
     pub work_type: WorkType,
     pub processing_fn: ProcessingFn,

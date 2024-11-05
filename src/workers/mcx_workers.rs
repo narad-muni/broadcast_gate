@@ -6,6 +6,7 @@ use std::{
 
 use crate::{
     constants::{ALPHA_CHAR_LEN, MAX_MARKET_DEPTH_IDX, SNAPSHOT_TEMPLATE_ID, TIMESTAMP_LEN},
+    global::OUTPUT,
     types::{
         packet::Packet,
         packet_structures::{
@@ -120,6 +121,8 @@ pub fn process_mcx_depth(packet: &mut Packet, work: &Work) -> bool {
     } else {
         // todo!();
     }
+
+    OUTPUT.write(&packet);
 
     true
 }
