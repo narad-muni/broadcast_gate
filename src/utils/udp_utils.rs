@@ -18,7 +18,7 @@ pub fn build_socket(mcast_ip: &String, interface_ip: &String, port: u16, timeout
         .unwrap();
 
     socket
-        .bind(&SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, port).into())
+        .bind(&SocketAddrV4::new(interface_ip.parse().unwrap(), port).into())
         .unwrap();
 
     socket

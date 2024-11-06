@@ -109,6 +109,7 @@ impl FromStr for OutputTargets {
             "kafka" => Ok(OutputTargets::KAFKA),
             "stdout" => Ok(OutputTargets::STDOUT),
             "counter" => Ok(OutputTargets::COUNTER),
+            #[cfg(feature = "depth_view")]
             "depth_view" => Ok(OutputTargets::DEPTH_VIEW),
             "ws" => Ok(OutputTargets::WS),
             _ => Err("Invalid target"),

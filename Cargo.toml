@@ -30,4 +30,4 @@ tungstenite = "0.24.0"
 strip = true
 
 [features]
-depth_webview = ["web-view"]
+depth_view = ["web-view"]

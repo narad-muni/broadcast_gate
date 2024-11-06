@@ -4,6 +4,11 @@
   let search = $state("");
   let tokens = $derived(search.split(" "));
   let depth_data = $state({});
+  let ws_url = $state(localStorage.getItem("ws_url") || "ws://localhost:8080");
+
+  $effect(() => {
+    localStorage.setItem("ws_url", ws_url);
+  });
 
   function add_data(key, data) {
     key = key.toString();
@@ -23,38 +28,46 @@
     add_data(event.detail.token, event.detail);
   });
 
-  const url = new URL(window.location.href);
+  let socket = {};
+  try {
+    socket = new WebSocket(ws_url);
 
-  // Get the value of a specific query parameter
-  const ws = url.searchParams.get("ws");
+    // Event listener for when a message is received from the server
+    socket.addEventListener("message", (event) => {
+      let data = JSON.parse(event.data);
+      data.market_depth_info = data.market_depth_info.slice(0, data.buy_depth_count + data.sell_depth_count);
 
-  if (ws == null) {
-    // Reload with ws param
-    window.location.href = window.location.href + "?ws=ws://localhost:8080";
-  }
+      add_data(data.token, data);
 
-  const socket = new WebSocket(ws);
+      // console.log(data);
+    });
 
-  // Event listener for when a message is received from the server
-  socket.addEventListener("message", (event) => {
-    let data = JSON.parse(event.data);
-    data.market_depth_info = data.market_depth_info.slice(0, data.buy_depth_count + data.sell_depth_count);
+    // Event listener for when the connection is closed
+    socket.addEventListener("close", (event) => {
+        alert("Disconnected from WebSocket server.");
+    });
 
-    add_data(data.token, data);
-
-    // console.log(data);
-  });
-
-  // Event listener for when the connection is closed
-  socket.addEventListener("close", (event) => {
-      alert("Disconnected from WebSocket server.");
-  });
-
-  // Event listener for when there is an error with the connection
-  socket.addEventListener("error", (error) => {
-      alert("WebSocket error:", error);
-  });
+    // Event listener for when there is an error with the connection
+    socket.addEventListener("error", (error) => {
+        alert("WebSocket error:", error);
+    });
+  } catch (error) {
+    alert(error);
+    ws_url = "";
+  };
 </script>
+
+<form class="max-w-md mx-auto">   
+  <div class="relative">
+      <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+          <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+          </svg>
+      </div>
+      <input bind:value={ws_url} type="search" id="default-search" class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="ws://localhost:8080" required />
+      <button type="submit" class="absolute inset-y-0 end-0 flex items-center pe-4">Connect</button>
+  </div>
+</form>
 
 <form class="max-w-md mx-auto">   
   <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>

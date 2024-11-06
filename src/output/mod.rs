@@ -1,5 +1,5 @@
 pub mod counter;
-#[cfg(feature = "depth_webview")]
+#[cfg(feature = "depth_view")]
 pub mod depth_view;
 pub mod kafka_output;
 pub mod std_out;
@@ -12,7 +12,7 @@ use std::{
 };
 
 use counter::Counter;
-#[cfg(feature = "depth_webview")]
+#[cfg(feature = "depth_view")]
 use depth_view::DepthView;
 use kafka_output::KafkaOutput;
 use std_out::StdOut;
@@ -30,7 +30,7 @@ pub struct Output {
     udp: UnsafeCell<UdpOutput>,
     stdout: UnsafeCell<StdOut>,
     counter: UnsafeCell<Counter>,
-    #[cfg(feature = "depth_webview")]
+    #[cfg(feature = "depth_view")]
     depth_view: Option<UnsafeCell<DepthView>>,
     lock: AtomicBool,
     output_targets: OutputTargets,
@@ -56,7 +56,7 @@ impl Output {
         let stdout = UnsafeCell::new(StdOut::new());
         let counter = UnsafeCell::new(Counter::new(settings.steps));
 
-        #[cfg(feature = "depth_webview")]
+        #[cfg(feature = "depth_view")]
         let depth_view = if settings.output_targets.contains(OutputTargets::DEPTH_VIEW) {
             Some(UnsafeCell::new(DepthView::new()))
         } else {
@@ -74,7 +74,7 @@ impl Output {
             udp,
             stdout,
             counter,
-            #[cfg(feature = "depth_webview")]
+            #[cfg(feature = "depth_view")]
             depth_view,
             ws,
             output_targets,
@@ -103,7 +103,7 @@ impl Output {
                 (*self.counter.get()).write(packet);
             }
 
-            #[cfg(feature = "depth_webview")]
+            #[cfg(feature = "depth_view")]
             if self.output_targets.contains(OutputTargets::DEPTH_VIEW) {
                 (*self.depth_view.as_ref().unwrap().get()).write(packet);
             }
