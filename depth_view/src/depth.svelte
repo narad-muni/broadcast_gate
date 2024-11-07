@@ -12,14 +12,14 @@
 </script>
 
 {#snippet depth(depth)}
-{@const bg = depth.bid ? 'bg-red-100' : 'bg-blue-100'}
+{@const bg = depth.bid ? 'bg-blue-100' : 'bg-depth-100'}
 {@const width = (depth.qty*100/depth.max)}
 
 <tr>
     <td>{depth.price}</td>
     <td class="text-end px-2">{depth.number_of_orders}</td>
     <td class="text-end flex justify-end">
-        <div class="flex duration-150 justify-end w-[{width}%] {bg}">
+        <div class="flex duration-300 justify-end w-[{width}%] {bg}">
             {depth.qty}
         </div>
     </td>
@@ -27,7 +27,7 @@
 {/snippet}
 
 <div class="flex gap-x-2">
-    <table class="w-full table-fixed h-min text-red-500">
+    <table class="w-full table-fixed h-min text-blue-500">
         <thead class="text-xs text-gray-500">
             <tr>
                 <th class="font-thin text-start">BID</th>
@@ -46,7 +46,7 @@
         </tbody>
     </table>
     <div class="bg-gray-400 w-[1px]">&nbsp;</div>
-    <table class="w-full table-fixed h-min text-blue-500">
+    <table class="w-full table-fixed h-min text-red-500">
         <thead class="text-xs text-gray-500">
             <tr>
                 <th class="font-thin text-start">ASK</th>
