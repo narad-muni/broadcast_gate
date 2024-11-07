@@ -83,6 +83,19 @@ pub struct MDSshGrp {
 
 impl MDSshGrp {
     pub fn from_md_incr_grp(md_incr_grp: &MDIncGrp) -> Self {
+        // TradeCondition is only present for trades
+        let trade_condition = if md_incr_grp.MDPriceLevel.is_some() {
+            None
+        } else {
+            Some(
+                md_incr_grp
+                    .TradeEntryGrp
+                    .as_ref()
+                    .unwrap()
+                    .TradeCondition
+                    .expect("TradeCondition must be present for trades"),
+            )
+        };
         MDSshGrp {
             MDOriginType: md_incr_grp.MDOriginType,
             MDEntryType: md_incr_grp.MDEntryType,
@@ -98,7 +111,7 @@ impl MDSshGrp {
             SecurityTradingEvent: None,
             PotentialSecurityTradingEvent: md_incr_grp.PotentialSecurityTradingEvent,
             SoldOutIndicator: None,
-            TradeCondition: None,
+            TradeCondition: trade_condition,
             MultiLegReportingType: None,
             MultiLegPriceModel: None,
             QuoteCondition: md_incr_grp.QuoteCondition,

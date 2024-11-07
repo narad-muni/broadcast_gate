@@ -238,23 +238,30 @@ fn snapshot_to_market_picture(depth_snapshot: &DepthSnapshot) -> TagMarketPictur
 
 fn add_depth(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp) {
     let entry_type = md_incr_grp.MDEntryType;
-
     let new_md_ssh_grp = MDSshGrp::from_md_incr_grp(md_incr_grp);
 
-    let pos = get_new_depth_idx(&depth_snapshot.MDSshGrp, &new_md_ssh_grp);
+    // Add pos, only if buy/sell depth
+    // else add at start
+    let pos = if md_incr_grp.MDPriceLevel.is_some() {
+        get_new_depth_idx(&depth_snapshot.MDSshGrp, &new_md_ssh_grp)
+    } else {
+        0
+    };
 
     depth_snapshot.MDSshGrp.insert(pos, new_md_ssh_grp);
 
-    // Increment price level for higher prices
-    depth_snapshot
-        .MDSshGrp
-        .iter_mut()
-        .skip(pos + 1)
-        .for_each(|mdssh_grp| {
-            if mdssh_grp.MDEntryType == entry_type && mdssh_grp.MDPriceLevel.is_some() {
-                mdssh_grp.MDPriceLevel = Some(mdssh_grp.MDPriceLevel.unwrap() + 1);
-            }
-        });
+    if md_incr_grp.MDPriceLevel.is_some() {
+        // Increment price level for higher prices
+        depth_snapshot
+            .MDSshGrp
+            .iter_mut()
+            .skip(pos + 1)
+            .for_each(|mdssh_grp| {
+                if mdssh_grp.MDEntryType == entry_type && mdssh_grp.MDPriceLevel.is_some() {
+                    mdssh_grp.MDPriceLevel = Some(mdssh_grp.MDPriceLevel.unwrap() + 1);
+                }
+            });
+    }
 }
 
 fn change_depth(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp) {
@@ -266,7 +273,15 @@ fn change_depth(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp) {
         mdssh_grp.MDPriceLevel == Some(level) && mdssh_grp.MDEntryType == md_incr_grp.MDEntryType
     });
 
-    let mdssh_grp = &mut depth_snapshot.MDSshGrp[pos.expect("Unable to find position to change")];
+    // If pos to change doesn't exist, add it
+    let pos = if pos.is_some() {
+        pos.unwrap()
+    } else {
+        add_depth(depth_snapshot, md_incr_grp);
+        return;
+    };
+
+    let mdssh_grp = &mut depth_snapshot.MDSshGrp[pos];
 
     mdssh_grp.MDEntrySize = md_incr_grp.MDEntrySize.or(mdssh_grp.MDEntrySize);
     mdssh_grp.NumberOfOrders = md_incr_grp.NumberOfOrders.or(mdssh_grp.NumberOfOrders);
