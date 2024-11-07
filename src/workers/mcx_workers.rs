@@ -29,13 +29,19 @@ pub fn process_mcx_depth(packet: &mut Packet, work: &Work) -> bool {
     let message: Message = bytes_to_struct(&packet.0[..]);
 
     if let Message::DepthSnapshotEmpty(()) = message {
+        // Update seq no only if it is after current
+        let seq_no_update = compare_and_swap_gt(&mcx_state.seq_no, work.seq_no as u32);
+
+        if seq_no_update.is_err() {
+            return false;
+        }
+
         let raw_ptr = mcx_state.ptr.swap(ptr::null_mut(), Ordering::SeqCst);
         let mut ptr = unsafe { Box::from_raw(raw_ptr) };
 
         // Cast packet as depth snapshot
         let snapshot: &mut DepthSnapshot = bytes_to_struct_mut(&mut ptr.0[..]);
 
-        mcx_state.seq_no.store(work.seq_no as u32, Ordering::SeqCst);
         let target_market_picture = snapshot_to_market_picture(snapshot);
 
         packet.1 = target_market_picture.msg_header.message_length as usize;
@@ -56,35 +62,19 @@ pub fn process_mcx_depth(packet: &mut Packet, work: &Work) -> bool {
             }
         }
     } else if let Message::MDIncGrp(md_incr_grp) = message {
+        // Update seq no only if it is after current
+        let seq_no_update = compare_and_swap_gt(&mcx_state.seq_no, work.seq_no as u32);
+
+        if seq_no_update.is_err() {
+            return false;
+        }
+
         // Swap atomic ptr with null
         let raw_ptr = mcx_state.ptr.swap(ptr::null_mut(), Ordering::SeqCst);
         let mut ptr = unsafe { Box::from_raw(raw_ptr) };
 
         // Cast packet as depth snapshot
         let snapshot: &mut DepthSnapshot = bytes_to_struct_mut(&mut ptr.0[..]);
-
-        // Update seq no only if it is after current
-        let seq_no_update = compare_and_swap_gt(&mcx_state.seq_no, work.seq_no as u32);
-
-        // If unable to update seq no, skip processing
-        if seq_no_update.is_err() {
-            // Put ptr back into atomic ptr if it is null
-            let swapped = mcx_state.ptr.compare_exchange(
-                ptr::null_mut(),
-                Box::into_raw(ptr),
-                Ordering::SeqCst,
-                Ordering::SeqCst,
-            );
-
-            // De allocate if current swap doesn't succeed
-            if swapped.is_err() {
-                unsafe {
-                    drop_in_place(raw_ptr);
-                }
-            }
-
-            return false;
-        }
 
         // Perform update based on MDUpdateAction
         match md_incr_grp.MDUpdateAction {
@@ -156,7 +146,7 @@ fn snapshot_to_market_picture(depth_snapshot: &DepthSnapshot) -> TagMarketPictur
         if md_ssh_grp.MDEntryType == 9 {
             volume_traded_today = md_ssh_grp
                 .TotalNumOfTrades
-                .expect("TotalNumOfTrades must be present for B")
+                .expect("TotalNumOfTrades must be present for MDEntryType B(9) (TradeVolume)")
                 as i64;
 
             atp = md_ssh_grp
@@ -166,7 +156,7 @@ fn snapshot_to_market_picture(depth_snapshot: &DepthSnapshot) -> TagMarketPictur
             // Set ohlc
             let trade_condition = md_ssh_grp
                 .TradeCondition
-                .expect("TradeCondition must be present for 2");
+                .expect("TradeCondition must be present for MDEntryType 2 (Trade)");
 
             // Set ltp, ltq, ltt
             if trade_condition & 1 == 1 {

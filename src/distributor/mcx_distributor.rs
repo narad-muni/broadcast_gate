@@ -6,7 +6,7 @@ use serde::Deserialize;
 
 use crate::{
     constants::BUF_SIZE,
-    global::{MCX_TOKEN_WISE_MAP, TPOOL_QUEUE},
+    global::{MCX_TOKEN_WISE_MAP, STATISTICS, TPOOL_QUEUE},
     settings,
     types::{
         packet::Packet,
@@ -93,6 +93,8 @@ impl Distribute for McxDistributor {
 
 impl McxDistributor {
     pub fn distribute_snapshot(&self, depth_snapshot: DepthSnapshot) {
+        STATISTICS.get().depth_packets_count += 1;
+
         // Get token and mcx state
         let token = depth_snapshot.SecurityID as usize;
         let mcx_state = MCX_TOKEN_WISE_MAP
@@ -106,8 +108,6 @@ impl McxDistributor {
         if new_seq_no <= current_seq_no {
             return;
         }
-
-        mcx_state.seq_no.store(new_seq_no, Ordering::SeqCst);
 
         // Create work
         let work = Work {
@@ -153,6 +153,7 @@ impl McxDistributor {
     }
 
     pub fn distribute_incremental(&self, depth_incremental: DepthIncremental) {
+        STATISTICS.get().depth_packets_count += 1;
         let messages = depth_incremental.MDIncGrp;
 
         for message in messages {

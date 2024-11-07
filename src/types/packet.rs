@@ -125,13 +125,13 @@ impl Packet {
                         // Add packet and increase packet idx
                         packets[packet_idx] = (packet, work_type);
                         packet_idx += 1;
-                        STATISTICS.get().mbo_packets_count += 1;
+                        STATISTICS.get().depth_packets_count += 1;
                     }
                 }
 
                 packets[packet_idx] = (packet, work_type);
                 packet_idx += 1;
-                STATISTICS.get().mbo_packets_count += 1;
+                STATISTICS.get().depth_packets_count += 1;
             }
         }
 
