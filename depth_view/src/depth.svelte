@@ -12,7 +12,7 @@
 </script>
 
 {#snippet depth(depth)}
-{@const bg = depth.bid ? 'bg-blue-100' : 'bg-depth-100'}
+{@const bg = depth.bid ? 'bg-blue-100' : 'bg-red-100'}
 {@const width = (depth.qty*100/depth.max)}
 
 <tr>
