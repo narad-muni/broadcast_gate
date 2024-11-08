@@ -193,7 +193,7 @@ fn snapshot_to_market_picture(depth_snapshot: &DepthSnapshot) -> TagMarketPictur
             if trade_condition & 8 == 8 {
                 low_price = (md_ssh_grp.MDEntryPx.unwrap() * 100.0) as i32;
             }
-            if trade_condition & 16 == 16 {
+            if trade_condition & 128 == 128 {
                 close_price = (md_ssh_grp.MDEntryPx.unwrap() * 100.0) as i32;
             }
         }
@@ -237,7 +237,7 @@ fn snapshot_to_market_picture(depth_snapshot: &DepthSnapshot) -> TagMarketPictur
         // Add market depth
         tag_market_picture_broadcast.market_depth_info[idx] = TagMarketDepthInfo {
             qty: ssh_grp.MDEntrySize.unwrap() as i64,
-            price: ssh_grp.MDEntryPx.unwrap() as i32,
+            price: (ssh_grp.MDEntryPx.unwrap() * 100.0) as i32,
             number_of_orders: ssh_grp.NumberOfOrders.unwrap() as i16,
         };
 
@@ -256,39 +256,59 @@ fn snapshot_to_market_picture(depth_snapshot: &DepthSnapshot) -> TagMarketPictur
 }
 
 fn do_trade(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp) {
-    let mut qty = md_incr_grp
+    let trade_qty = md_incr_grp
         .MDEntrySize
         .expect("MDEntrySize must be present for trade");
 
-    // Filter depth
-    depth_snapshot.MDSshGrp.retain_mut(|md_ssh| {
-        if md_ssh.MDEntryType >= 2 {
-            return true;
-        }
+    let trade_price = md_incr_grp
+        .MDEntryPx
+        .expect("MDEntryPx must be present for trade");
 
-        // Only remove buy orders
-        // Retain all buy if remaining qty is 0
-        if md_ssh.MDEntryType == 0 {
-            // Decrease qty against buy
-            if qty == 0.0 {
-                return true;
-            } else {
-                if qty == md_ssh.MDEntrySize.unwrap() {
-                    qty = 0.0;
-                    return false;
-                } else if qty > md_ssh.MDEntrySize.unwrap() {
-                    qty -= md_ssh.MDEntrySize.unwrap();
-                    return false;
-                } else {
-                    md_ssh.MDEntrySize = Some(md_ssh.MDEntrySize.unwrap() - qty);
-                    qty = 0.0;
-                    return true;
-                }
+    let pos_to_trade = depth_snapshot
+        .MDSshGrp
+        .iter()
+        .position(|md_ssh| {
+            if md_ssh.MDEntryType >= 2 {
+                return false;
             }
-        } else {
-            true
-        }
-    });
+            if Some(trade_price) == md_ssh.MDEntryPx {
+                return true;
+            }
+
+            return false;
+        })
+        .expect("No depth matched trade price");
+
+    if depth_snapshot
+        .MDSshGrp
+        .get(pos_to_trade)
+        .unwrap()
+        .MDEntrySize
+        > Some(trade_qty)
+    {
+        depth_snapshot
+            .MDSshGrp
+            .get_mut(pos_to_trade)
+            .unwrap()
+            .MDEntrySize = Some(
+            depth_snapshot
+                .MDSshGrp
+                .get_mut(pos_to_trade)
+                .unwrap()
+                .MDEntrySize
+                .unwrap()
+                - trade_qty,
+        );
+    } else {
+        let removed_depth = depth_snapshot.MDSshGrp.remove(pos_to_trade);
+
+        // Decrement price level
+        depth_snapshot.MDSshGrp.iter_mut().for_each(|md_ssh| {
+            if removed_depth.MDEntryType == md_ssh.MDEntryType {
+                md_ssh.MDPriceLevel = Some(md_ssh.MDPriceLevel.unwrap() - 1);
+            }
+        });
+    }
 
     // // Add ohlcv, ltt, ltq, ltp etc
     add_depth(depth_snapshot, md_incr_grp);
@@ -315,6 +335,10 @@ fn add_depth(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp) {
 
         pos.unwrap_or(0)
     };
+
+    if depth_snapshot.SecurityID == 436236 {
+        println!();
+    }
 
     depth_snapshot.MDSshGrp.insert(pos, new_md_ssh_grp);
 

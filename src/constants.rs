@@ -82,6 +82,7 @@ pub const DEBT_MBP_UNCOMPRESSED_DATA_LEN: usize = 68;
 
 // For MCX
 pub const SNAPSHOT_TEMPLATE_ID: i32 = 101;
+pub const MAX_INCR_TO_PROCESS: i32 = 0;
 
 // Custom types
 pub const MAX_MARKET_DEPTH_IDX: usize = 200; // Define this constant as per your requirement

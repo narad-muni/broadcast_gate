@@ -22,12 +22,8 @@ twiddler = {git="https://github.com/narad-muni/twiddle_rs"}
 mylzo = {git="https://github.com/narad-muni/mylzo"}
 fastlib = {git="https://github.com/narad-muni/rs-fastlib"}
 bytes = "1.8.0"
-web-view = { version="0.7.3", optional = true }
 serde-big-array = "0.5.1"
 tungstenite = "0.24.0"
 
 [profile.release]
 strip = true
-
-[features]
-depth_view = ["web-view"]

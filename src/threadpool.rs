@@ -7,6 +7,7 @@ use std::{
 use threadpool::ThreadPool;
 
 use crate::{
+    constants::MAX_INCR_TO_PROCESS,
     global::{PACKET_QUEUES, TPOOL_QUEUE, WORK_LOCKS},
     types::work::{Work, WorkType},
 };
@@ -63,7 +64,7 @@ pub fn work_on_mcx(work: Work) {
         .expect("MCX state required for processing mcx work");
     let packet_queue = mcx_state.packet_queue;
     let work_lock = mcx_state.work_lock;
-    let mut total_processed = 0;
+    let mut incremental_processed = 0;
 
     while let Some(mut packet) = packet_queue.pop() {
         let processed = (work.processing_fn)(&mut packet, &work);
@@ -73,9 +74,13 @@ pub fn work_on_mcx(work: Work) {
             continue;
         }
 
+        incremental_processed += 1;
+
         if !packet_queue.is_empty() {
-            if TPOOL_QUEUE.is_empty() {
-                // If no other work in tpool, continue current work
+            if TPOOL_QUEUE.is_empty() || incremental_processed <= MAX_INCR_TO_PROCESS {
+                // If no other work in tpool
+                // Or less than max packets have been processed
+                // continue current work
                 continue;
             } else {
                 // If some work in tpool, push current work to tpool and exit
