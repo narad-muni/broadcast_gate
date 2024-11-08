@@ -41,7 +41,9 @@ pub fn get_bse_processing_fn(work_type: &WorkType) -> ProcessingFn {
 
 pub fn get_mcx_processing_fn(work_type: &WorkType) -> ProcessingFn {
     match work_type {
-        WorkType::McxDepth => mcx_workers::process_mcx_depth,
+        WorkType::McxDepthSnapshot => mcx_workers::process_mcx_depth_snapshot,
+        WorkType::McxDepthIncr => mcx_workers::process_mcx_depth_incremental,
+        WorkType::McxOther => mcx_workers::process_mcx_depth_others,
         _ => panic!("Invalid work type for MCX processing function"),
     }
 }

@@ -14,7 +14,7 @@ use crate::{
         state::McxTokenState,
         work::{Work, WorkType},
     },
-    utils::byte_utils::struct_to_bytes_heap,
+    utils::{atomic_utils::compare_and_swap_gte, byte_utils::struct_to_bytes_heap},
     workers::get_mcx_processing_fn,
 };
 
@@ -102,17 +102,17 @@ impl McxDistributor {
             .or_insert(McxTokenState::new());
 
         // Do not process if packet's seq no is older than current
-        let current_seq_no = mcx_state.seq_no.load(Ordering::SeqCst);
         let new_seq_no = depth_snapshot.MsgSeqNum.expect("MsgSeqNum must be present");
+        let swapped = compare_and_swap_gte(&mcx_state.seq_no, new_seq_no);
 
-        if new_seq_no <= current_seq_no {
+        if swapped.is_err() {
             return;
         }
 
         // Create work
         let work = Work {
-            work_type: WorkType::McxDepth,
-            processing_fn: get_mcx_processing_fn(&WorkType::McxDepth),
+            work_type: WorkType::McxDepthSnapshot,
+            processing_fn: get_mcx_processing_fn(&WorkType::McxDepthSnapshot),
             atomic_ptr: None,
             mcx_state: Some(mcx_state.clone()),
             seq_no: new_seq_no as usize,
@@ -175,8 +175,8 @@ impl McxDistributor {
             }
 
             let work = Work {
-                work_type: WorkType::McxDepth,
-                processing_fn: get_mcx_processing_fn(&WorkType::McxDepth),
+                work_type: WorkType::McxDepthIncr,
+                processing_fn: get_mcx_processing_fn(&WorkType::McxDepthIncr),
                 atomic_ptr: None,
                 mcx_state: Some(mcx_state.clone()),
                 seq_no: depth_incremental.MsgSeqNum as usize,
@@ -199,6 +199,6 @@ impl McxDistributor {
     }
 
     pub fn distribute_others(&self, message: Message) {
-        // todo!("Handle other messages")
+        println!("Other messages {:?}", message);
     }
 }

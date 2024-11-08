@@ -84,18 +84,30 @@ pub struct MDSshGrp {
 impl MDSshGrp {
     pub fn from_md_incr_grp(md_incr_grp: &MDIncGrp) -> Self {
         // TradeCondition is only present for trades
-        let trade_condition = if md_incr_grp.MDPriceLevel.is_some() {
-            None
-        } else {
-            Some(
+        let mut TradeCondition = None;
+        let mut TotalTradedValue = None;
+        let mut AverageTradedPrice = None;
+        let mut TotalNumOfTrades = None;
+
+        if md_incr_grp.MDEntryType == 2 {
+            TradeCondition = Some(
                 md_incr_grp
                     .TradeEntryGrp
                     .as_ref()
                     .unwrap()
                     .TradeCondition
                     .expect("TradeCondition must be present for trades"),
-            )
-        };
+            );
+        } else if md_incr_grp.MDEntryType == 9 {
+            TotalTradedValue = md_incr_grp.TradeEntryGrp.as_ref().unwrap().TotalTradedValue;
+            AverageTradedPrice = md_incr_grp
+                .TradeEntryGrp
+                .as_ref()
+                .unwrap()
+                .AverageTradedPrice;
+            TotalNumOfTrades = md_incr_grp.TradeEntryGrp.as_ref().unwrap().TotalNumOfTrades;
+        }
+
         MDSshGrp {
             MDOriginType: md_incr_grp.MDOriginType,
             MDEntryType: md_incr_grp.MDEntryType,
@@ -111,7 +123,7 @@ impl MDSshGrp {
             SecurityTradingEvent: None,
             PotentialSecurityTradingEvent: md_incr_grp.PotentialSecurityTradingEvent,
             SoldOutIndicator: None,
-            TradeCondition: trade_condition,
+            TradeCondition,
             MultiLegReportingType: None,
             MultiLegPriceModel: None,
             QuoteCondition: md_incr_grp.QuoteCondition,
@@ -121,9 +133,9 @@ impl MDSshGrp {
             MDPriceLevel: md_incr_grp.MDPriceLevel,
             MDEntryTime: md_incr_grp.MDEntryTime,
             NonDisclosedTradeVolume: None,
-            TotalTradedValue: None,
-            AverageTradedPrice: None,
-            TotalNumOfTrades: None,
+            TotalTradedValue,
+            AverageTradedPrice,
+            TotalNumOfTrades,
         }
     }
 }
@@ -221,23 +233,23 @@ pub struct MDIncGrp {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-struct TradeEntryGrp {
-    TrdType: Option<u32>,
-    AlgorithmicTradeIndicator: Option<u32>,
-    TradeCondition: Option<u64>,
-    MultiLegReportingType: Option<u32>,
-    MultiLegPriceModel: Option<u32>,
-    AggressorTime: Option<i64>,
-    RequestTime: Option<i64>,
-    AggressorSide: Option<u32>,
-    NumberOfBuyOrders: Option<u32>,
-    NumberOfSellOrders: Option<u32>,
-    TotalNumOfTrades: Option<u32>,
-    RestingCxlQty: Option<f64>,
-    MDEntryID: Option<u32>,
-    TotalTradedValue: Option<f64>,
-    AverageTradedPrice: Option<f64>,
-    NonDisclosedTradeVolume: Option<f64>,
+pub struct TradeEntryGrp {
+    pub TrdType: Option<u32>,
+    pub AlgorithmicTradeIndicator: Option<u32>,
+    pub TradeCondition: Option<u64>,
+    pub MultiLegReportingType: Option<u32>,
+    pub MultiLegPriceModel: Option<u32>,
+    pub AggressorTime: Option<i64>,
+    pub RequestTime: Option<i64>,
+    pub AggressorSide: Option<u32>,
+    pub NumberOfBuyOrders: Option<u32>,
+    pub NumberOfSellOrders: Option<u32>,
+    pub TotalNumOfTrades: Option<u32>,
+    pub RestingCxlQty: Option<f64>,
+    pub MDEntryID: Option<u32>,
+    pub TotalTradedValue: Option<f64>,
+    pub AverageTradedPrice: Option<f64>,
+    pub NonDisclosedTradeVolume: Option<f64>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

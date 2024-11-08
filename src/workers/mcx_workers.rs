@@ -16,25 +16,18 @@ use crate::{
         work::Work,
     },
     utils::{
-        atomic_utils::compare_and_swap_gt,
+        atomic_utils::compare_and_swap_gte,
         byte_utils::{bytes_to_struct, bytes_to_struct_mut, create_empty, struct_to_bytes},
         time_utils::get_epoch_us,
     },
 };
 
-pub fn process_mcx_depth(packet: &mut Packet, work: &Work) -> bool {
-    // Swap atomic ptr with null, and add atomic ptr to work
-    let mcx_state = work.mcx_state.clone().unwrap();
-
+pub fn process_mcx_depth_snapshot(packet: &mut Packet, work: &Work) -> bool {
     let message: Message = bytes_to_struct(&packet.0[..]);
 
     if let Message::DepthSnapshotEmpty(()) = message {
-        // Update seq no only if it is after current
-        let seq_no_update = compare_and_swap_gt(&mcx_state.seq_no, work.seq_no as u32);
-
-        if seq_no_update.is_err() {
-            return false;
-        }
+        // Swap atomic ptr with null, and add atomic ptr to work
+        let mcx_state = work.mcx_state.clone().unwrap();
 
         let raw_ptr = mcx_state.ptr.swap(ptr::null_mut(), Ordering::SeqCst);
         let mut ptr = unsafe { Box::from_raw(raw_ptr) };
@@ -61,9 +54,23 @@ pub fn process_mcx_depth(packet: &mut Packet, work: &Work) -> bool {
                 drop_in_place(raw_ptr);
             }
         }
-    } else if let Message::MDIncGrp(md_incr_grp) = message {
+
+        OUTPUT.write(&packet);
+
+        return true;
+    }
+
+    // Invalid packet type
+    false
+}
+
+pub fn process_mcx_depth_incremental(packet: &mut Packet, work: &Work) -> bool {
+    let message: Message = bytes_to_struct(&packet.0[..]);
+
+    if let Message::MDIncGrp(md_incr_grp) = message {
+        let mcx_state = work.mcx_state.clone().unwrap();
         // Update seq no only if it is after current
-        let seq_no_update = compare_and_swap_gt(&mcx_state.seq_no, work.seq_no as u32);
+        let seq_no_update = compare_and_swap_gte(&mcx_state.seq_no, work.seq_no as u32);
 
         if seq_no_update.is_err() {
             return false;
@@ -78,13 +85,19 @@ pub fn process_mcx_depth(packet: &mut Packet, work: &Work) -> bool {
 
         // Perform update based on MDUpdateAction
         match md_incr_grp.MDUpdateAction {
+            0 if md_incr_grp.MDEntryType == 2 => do_trade(snapshot, &md_incr_grp),
             0 => add_depth(snapshot, &md_incr_grp),
             1 => change_depth(snapshot, &md_incr_grp),
             2 => del_depth(snapshot, &md_incr_grp),
             3 => del_thru_depth(snapshot, &md_incr_grp),
             4 => del_from_depth(snapshot, &md_incr_grp),
             5 => overlay_depth(snapshot, &md_incr_grp),
-            _ => panic!("Invalid MDUpdateAction: {}", md_incr_grp.MDUpdateAction),
+            _ => {
+                println!(
+                    "Ignoring MDUpdateAction: {} Entry Type {:?}",
+                    md_incr_grp.MDUpdateAction, md_incr_grp.MDEntryType
+                )
+            }
         };
 
         snapshot.MsgSeqNum = Some(work.seq_no as u32);
@@ -108,12 +121,17 @@ pub fn process_mcx_depth(packet: &mut Packet, work: &Work) -> bool {
                 drop_in_place(raw_ptr);
             }
         }
-    } else {
-        // todo!();
+
+        OUTPUT.write(&packet);
+
+        return true;
     }
 
-    OUTPUT.write(&packet);
+    false
+}
 
+pub fn process_mcx_depth_others(_packet: &mut Packet, _work: &Work) -> bool {
+    // OUTPUT.write(&packet);
     true
 }
 
@@ -145,13 +163,14 @@ fn snapshot_to_market_picture(depth_snapshot: &DepthSnapshot) -> TagMarketPictur
         // Set vtt and atp
         if md_ssh_grp.MDEntryType == 9 {
             volume_traded_today = md_ssh_grp
-                .TotalNumOfTrades
-                .expect("TotalNumOfTrades must be present for MDEntryType B(9) (TradeVolume)")
+                .MDEntrySize
+                .expect("MDEntrySize must be present for MDEntryType B(9) (TradeVolume)")
                 as i64;
 
-            atp = md_ssh_grp
+            atp = (md_ssh_grp
                 .AverageTradedPrice
-                .expect("AveragePrice must be present for B") as i32;
+                .expect("AveragePrice must be present for B")
+                * 100.0) as i32;
         } else if md_ssh_grp.MDEntryType == 2 {
             // Set ohlc
             let trade_condition = md_ssh_grp
@@ -160,22 +179,22 @@ fn snapshot_to_market_picture(depth_snapshot: &DepthSnapshot) -> TagMarketPictur
 
             // Set ltp, ltq, ltt
             if trade_condition & 1 == 1 {
-                ltp = md_ssh_grp.MDEntryPx.unwrap() as i32;
+                ltp = (md_ssh_grp.MDEntryPx.unwrap() * 100.0) as i32;
                 ltq = md_ssh_grp.MDEntrySize.unwrap() as i32;
                 ltt = (md_ssh_grp.MDEntryTime.unwrap() / 1000000000) as i32;
             }
             // Set open, high, low, close
             if trade_condition & 2 == 2 {
-                open_price = md_ssh_grp.MDEntryPx.unwrap() as i32;
+                open_price = (md_ssh_grp.MDEntryPx.unwrap() * 100.0) as i32;
             }
             if trade_condition & 4 == 4 {
-                high_price = md_ssh_grp.MDEntryPx.unwrap() as i32;
+                high_price = (md_ssh_grp.MDEntryPx.unwrap() * 100.0) as i32;
             }
             if trade_condition & 8 == 8 {
-                low_price = md_ssh_grp.MDEntryPx.unwrap() as i32;
+                low_price = (md_ssh_grp.MDEntryPx.unwrap() * 100.0) as i32;
             }
             if trade_condition & 16 == 16 {
-                close_price = md_ssh_grp.MDEntryPx.unwrap() as i32;
+                close_price = (md_ssh_grp.MDEntryPx.unwrap() * 100.0) as i32;
             }
         }
     });
@@ -236,16 +255,65 @@ fn snapshot_to_market_picture(depth_snapshot: &DepthSnapshot) -> TagMarketPictur
     tag_market_picture_broadcast
 }
 
+fn do_trade(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp) {
+    let mut qty = md_incr_grp
+        .MDEntrySize
+        .expect("MDEntrySize must be present for trade");
+
+    // Filter depth
+    depth_snapshot.MDSshGrp.retain_mut(|md_ssh| {
+        if md_ssh.MDEntryType >= 2 {
+            return true;
+        }
+
+        // Only remove buy orders
+        // Retain all buy if remaining qty is 0
+        if md_ssh.MDEntryType == 0 {
+            // Decrease qty against buy
+            if qty == 0.0 {
+                return true;
+            } else {
+                if qty == md_ssh.MDEntrySize.unwrap() {
+                    qty = 0.0;
+                    return false;
+                } else if qty > md_ssh.MDEntrySize.unwrap() {
+                    qty -= md_ssh.MDEntrySize.unwrap();
+                    return false;
+                } else {
+                    md_ssh.MDEntrySize = Some(md_ssh.MDEntrySize.unwrap() - qty);
+                    qty = 0.0;
+                    return true;
+                }
+            }
+        } else {
+            true
+        }
+    });
+
+    // // Add ohlcv, ltt, ltq, ltp etc
+    add_depth(depth_snapshot, md_incr_grp);
+}
+
 fn add_depth(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp) {
     let entry_type = md_incr_grp.MDEntryType;
     let new_md_ssh_grp = MDSshGrp::from_md_incr_grp(md_incr_grp);
 
     // Add pos, only if buy/sell depth
     // else add at start
-    let pos = if md_incr_grp.MDPriceLevel.is_some() {
+    let pos = if entry_type < 2 {
         get_new_depth_idx(&depth_snapshot.MDSshGrp, &new_md_ssh_grp)
     } else {
-        0
+        let pos = depth_snapshot
+            .MDSshGrp
+            .iter()
+            .position(|md_ssh| md_ssh.MDEntryType == entry_type);
+
+        // Remove if already exists
+        if let Some(pos) = pos {
+            depth_snapshot.MDSshGrp.remove(pos);
+        }
+
+        pos.unwrap_or(0)
     };
 
     depth_snapshot.MDSshGrp.insert(pos, new_md_ssh_grp);

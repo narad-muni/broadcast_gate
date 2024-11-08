@@ -32,7 +32,7 @@ impl ThreadPoolMaster {
                     match work.work_type {
                         // Work on map for token wise
                         WorkType::TokenWise(_) => work_on_map(work),
-                        WorkType::McxDepth => work_on_mcx(work),
+                        WorkType::McxDepthSnapshot | WorkType::McxDepthIncr => work_on_mcx(work),
                         // Work on queue for other types
                         _ => work_on_queue(work),
                     }
@@ -63,6 +63,7 @@ pub fn work_on_mcx(work: Work) {
         .expect("MCX state required for processing mcx work");
     let packet_queue = mcx_state.packet_queue;
     let work_lock = mcx_state.work_lock;
+    let mut total_processed = 0;
 
     while let Some(mut packet) = packet_queue.pop() {
         let processed = (work.processing_fn)(&mut packet, &work);

@@ -20,7 +20,9 @@ pub enum WorkType {
     NseUncompressed,
     SegmentWise(u8),
     TokenWise(i32),
-    McxDepth,
+    McxDepthSnapshot,
+    McxDepthIncr,
+    McxOther,
 }
 
 impl WorkType {
@@ -31,7 +33,9 @@ impl WorkType {
             Self::NseUncompressed => 2, // First element of queue is for uncompressed
             Self::SegmentWise(i) => 3 + *i as usize, // each segment has its own queue
             Self::TokenWise(i) => *i as usize, // Shouldn't be used on queue, only on map
-            Self::McxDepth => 0,
+            Self::McxDepthSnapshot => 0,
+            Self::McxDepthIncr => 0,
+            Self::McxOther => 0,
         }
     }
 }
