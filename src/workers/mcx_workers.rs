@@ -336,10 +336,6 @@ fn add_depth(depth_snapshot: &mut DepthSnapshot, md_incr_grp: &MDIncGrp) {
         pos.unwrap_or(0)
     };
 
-    if depth_snapshot.SecurityID == 436236 {
-        println!();
-    }
-
     depth_snapshot.MDSshGrp.insert(pos, new_md_ssh_grp);
 
     if md_incr_grp.MDPriceLevel.is_some() {
