@@ -17,7 +17,6 @@
   });
 
   function add_data(key, data) {
-    console.log("Received ", key);
 
     key = key.toString();
     
@@ -29,13 +28,10 @@
       return
     }
 
+
     depth_data[key] = data;
 
     changed = !changed;
-
-    if (key == "434648" || key == 434648) {
-      console.log(depth_data);
-    }
   }
 
   document.addEventListener("depth_data_event", (event) => {
@@ -116,7 +112,6 @@
 
 {#key changed}
 {#each Object.entries(depth_data) as [key, data]}
-{console.log(tokens.includes(key), tokens, key)}
     {#if tokens.includes(key) || search == ""}
     <Details {data}/>
     {/if}
