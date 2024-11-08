@@ -16,7 +16,7 @@
 {@const width = (depth.qty*100/depth.max)}
 
 <tr>
-    <td>{depth.price}</td>
+    <td>{depth.price / 100}</td>
     <td class="text-end px-2">{depth.number_of_orders}</td>
     <td class="text-end flex justify-end">
         <div class="flex duration-300 justify-end w-[{width}%] {bg}">
